@@ -1,0 +1,25 @@
+import(BiocGenerics)
+import(IRanges)
+import(GenomicRanges)
+importFrom(Biostrings, DNAStringSet, detail)
+importFrom(Rsamtools, BamFile)
+importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
+importFrom(gmapR, bam_tally, BamTallyParam)
+importFrom(VariantAnnotation, VCFHeader, VCF)
+
+export(callVariants, qaVariants, tallyVariants)
+export(VariantQAFilters, VariantCallingFilters, VariantTallyParam)
+export(variantGR2Vcf)
+
+export(callSampleSpecificVariants, SampleSpecificVariantFilters)
+
+## API for next release
+## export(checkVariantConcordance,
+##        callCallable, callWildtype, callableFraction, annotateTrans,
+##        plotTNVariantsAlongGenome, TwoSampleFET, plotTiTv)
+
+
+## API that will likely be (re)moved
+## export(VEP2gr) # FIXME: we need a VEP package
+## export(detectQualityType) # not exporting for now
+## export(trans2genome) # FIXME: push up to GenomicRanges, based on map?

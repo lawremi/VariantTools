@@ -1,0 +1,687 @@
+\documentclass[10pt]{article}
+
+%\usepackage{times}
+%\usepackage{hyperref}
+\usepackage{Sweave}
+
+\textwidth=6.5in
+\textheight=8.5in
+% \parskip=.3cm
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
+\headheight=-.3in
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+
+\title{Variant calling and somatic mutation detection in tumor/normal pairs and cell lines}
+\author{Jeremiah Degenhardt}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{Sample clustering}
+
+<<SampleClustering, fig = TRUE>>=
+Samples <- paste('SAM6338', 13:21, sep = '')
+baseDir <- file.path('/gnet/is2/bioinfo/ngs_analysis/RNA-seq/')
+sampleDir <- c("R116/demultiplex/001/s_1",
+               "R116/demultiplex/001/s_2",
+               "R116/demultiplex/001/s_3",
+               "R116/demultiplex/001/s_4",
+               "R116/demultiplex/001/s_5",
+               "R116/demultiplex/001/s_6",
+#               "R116/demultiplex/001/s_7_part_00",
+#               "R116/demultiplex/001/s_8_part_00",
+               "R116/demultiplex/001/s_7",
+               "R116/demultiplex/001/s_8",
+               "R112/demultiplex/001/s_1")
+outputDirs <- paste(baseDir, sampleDir, sep = "")
+sampleData <- data.frame(SAMID = Samples,
+                         cell_line = rep(c("H1299", "H1993", "H2073"), each = 3),
+                         treatment = rep(c("Control", "IFN-alpha", "IFN-alpha A/D"), times = 3),
+                         read_len = c(rep("100bp", times = 8), "75bp"),
+                         chunked_lane = c(rep(FALSE, times = 6),
+                           rep(TRUE, times = 2), FALSE))
+                         
+
+rpkmsTable <- lapply(outputDirs,
+                     function(x) {
+                        result <- get(load(dir(file.path(x, 'RData'),
+                                               pattern = 'rpkms.RData',
+                                               full.names = TRUE)))
+                        vectName <- names(result)[names(result) %in%
+                                                  c("gene_coding", "genes_coding")]
+                        result <- result[[vectName]]
+                     })
+
+## some of these have more genes than others, so we
+## keep only the genes in common between each outout
+allGenes <- unique(do.call(c,lapply(rpkmsTable,
+                             function(x) {
+                               result <- names(x)
+                             })))
+library(multicore)
+unionGenes <- mclapply(allGenes,
+                     function(y) {
+                       myGene <- y
+                       system(paste("echo",myGene,"\n"))
+                       howMany <- sum(do.call(c,lapply(rpkmsTable,
+                                                       function(x) {
+                                                         result <- myGene %in% 
+                                                         as.character(names(x))
+                                                       })))
+                       if(howMany == length(Samples)) {
+                         inUnion <- TRUE
+                       }else {
+                         inUnion <- FALSE
+                       }
+                       inUnion
+                     })
+unionGenes <- do.call(c, unionGenes)
+sum(unionGenes)
+
+usableGenes <- allGenes[unionGenes]
+system("mkdir output")
+save(usableGenes, file = "output/usableGenes.RData")
+load("output/usableGenes.RData")
+
+correctedTable <- lapply(rpkmsTable,
+                         function(x) {
+                           results <- x[as.character(names(x)) %in%
+                                        as.character(usableGenes)]
+                           results <- results[order(names(results))]
+                         })
+rpkmsTable <- do.call(cbind,correctedTable)
+                             
+dimnames(rpkmsTable) <- list(rownames(rpkmsTable),Samples)
+
+
+## ##################################
+## For plotting purposes keep only
+## probes with top 2.5% of sd
+## ##################################
+library(RColorBrewer)
+library(matrixStats)
+library(gplots)
+HMcols=rev(brewer.pal(10,"RdBu"))
+
+v <- rowSds(rpkmsTable,na.rm=TRUE)
+threshold <- quantile(v,probs=c(0.975))
+topSds <- rpkmsTable[v > threshold,]
+dimnames(topSds) <- list(rownames(topSds),Samples)
+
+
+## ##################################
+## Draw heatmap
+## ##################################
+mycolors <- rep("grey", times = length(sampleData$treatment))
+mycolors[sampleData$treatment == "IFN-alpha"] <- "red"
+mycolors[sampleData$treatment == "IFN-alpha A/D"] <- "firebrick4"
+heatmap.2(as.matrix(topSds),
+          Rowv=NA,
+          trace = "none",
+          labRow=NA,
+#        labCol=NA,
+          scale="row",
+          col=HMcols,
+          ColSideColors=mycolors,
+          margins = c(7,7),
+          main="Interferon alpha vs Control\nRPKMs of top most variable genes (CDS)")
+legend("topright",
+       legend=c("IFN-alpha", "IFN-alpha A/D", "Control"),
+       col=c("red", "firebrick4", "grey"),cex=0.7,box.col = "white", pch=16)
+
+reportDir <- "report"
+system(paste("mkdir", reportDir)
+system(paste("mkdir", file.path(reportDir, "figures")))
+       
+dev.copy(pdf, file = "report/figures/heatmap_of_most_variable_genes.pdf")
+dev.off()
+dev.copy(jpeg, file = "report/figures/heatmap_of_most_variable_genes.jpg")
+dev.off()
+library(hwriter)
+
+
+p=openPage(file.path(reportDir,"sample_clustering"))
+hwrite('Interferon-alpha treatment in NSCLC cell lines', p, heading=1)
+hwrite('Sample clustering', p, heading=2)
+
+hwrite(sampleData, p,
+       col.bgcolor = list(treatment = rep(c("#BEBEBE", "#FF0000", "#8B1A1A"),
+                            times = 3)),
+       row.bgcolor = '#CCCCCC',
+       table.style = 'background-color: #F0F0F0', br = TRUE)
+hwrite('', p, br = TRUE)
+
+hwrite('Heatmap of the top 2.5% most variable genes (CDS)', p, br = TRUE)
+hwrite('', p, br = TRUE)
+hwriteImage(file.path("figures","heatmap_of_most_variable_genes.jpg"), p, link = file.path("figures","heatmap_of_most_variable_genes.pdf"), br = TRUE)
+hwrite('', p, br = TRUE)
+
+text <- paste('The samples cluster by cell line, with treatments being',
+              'most similar within each cell line.')
+hwrite(text, p, br=TRUE,
+       col.width='20px') 
+
+
+
+@ 
+
+\subsection{Differential expression analysis}
+
+Here we perform differential expression analysis using the DESeq method. However,
+the pvalue and FDR calculations seem incorrect, so we will also use the edgeR method
+further below.
+
+<<data_import>>=
+countsTable <- lapply(outputDirs,
+                      function(x) {
+                         result <- get(load(dir(file.path(x,'RData'),
+                                                pattern = "hits_by_gene_coding",
+                                                full.names = TRUE)))
+                      })
+correctedTable <- lapply(countsTable,
+                         function(x) {
+                           results <- x[as.character(names(x)) %in%
+                                        as.character(usableGenes)]
+                           results <- results[order(names(results))]
+                         })
+countsTable <- do.call(cbind,correctedTable)
+                             
+dimnames(countsTable) <- list(rownames(countsTable),Samples)
+
+
+countsTable <- as.data.frame(countsTable)
+@ 
+
+<<DESeq,fig=TRUE>>=
+library(DESeq)
+library(qvalue)
+
+sampleData$comparison1 <- ifelse(sampleData$treatment == "Control", "Control", "IFN")
+conds <- factor(sampleData$comparison1)
+
+cds <- newCountDataSet( countsTable, conds )
+cds <- estimateSizeFactors( cds )
+cds <- estimateDispersions( cds )
+#res <- nbinomTest( cds, "Normal", "Tumor")
+res <- nbinomTest( cds, "Control", "IFN")
+save(res, file = "output/DESeq_res.RData")
+load("output/DESeq_res.RData")
+
+sigGenes <- subset(res, !is.na(pval) & pval < 0.05 & abs(log2FoldChange) > 2)
+#qvals <- qvalue(sigGenes$pval)$qvalues
+#sigGenes$qval <- qvals
+sigGenes <- sigGenes[order(sigGenes$pval),]
+rownames(sigGenes) <- NULL
+head(sigGenes[,c(1,2,3,4,6,7)],n=20)
+
+### write report
+panel.boxnstripplot <- function(x, y, jitter.data = T, ...){
+    op <- trellis.par.get()
+    rect <- trellis.par.get('box.rectangle')
+    rect$col <- 'grey'
+    umbr <- trellis.par.get('box.umbrella')
+    umbr$col <- 'grey'
+    umbr$lty <- 1
+    pc <- trellis.par.get('plot.symbol')
+    pc$alpha <- 0
+    trellis.par.set('box.rectangle', rect)
+    trellis.par.set('box.umbrella', umbr)
+    trellis.par.set('plot.symbol', pc)
+    panel.bwplot(x,y,pch='|', cex=5,...)
+    pc$alpha <- 1
+    trellis.par.set('plot.symbol', pc)
+    panel.stripplot(x,y,jitter.data=jitter.data,...) 
+    trellis.par.set(op)
+}
+
+plotGene <- function(geneID, rpkmsTable, conds, geneName = NULL, sampleData) {
+  myGene <- rpkmsTable[which(rownames(rpkmsTable) == geneID),]
+  mydf <- data.frame(RPKM = myGene, Condition = conds)
+  mydf <- cbind(mydf,sampleData)
+  if(is.null(geneName)) {
+    geneName <- egsymList[[geneID]]
+  }
+  mycols <- c("grey", "red", "firebrick4")
+  mytheme <- trellis.par.get()
+  mytheme$superpose.symbol
+  print(
+  stripplot(RPKM ~  Condition, 
+            data = mydf, 
+            groups = SAMID, 
+            par.settings=list(
+              superpose.symbol=list(col = mycols, fill = mycols, pch = rep(c(22, 24, 21), each = 3))),
+            main=paste("Expression of", geneName, paste("(", geneID, ")", sep="")),
+            ylab="Expression (RPKM)",
+            auto.key = list(space = "right"),
+            panel.boxnstripplot
+            ) 
+           )
+}
+
+
+source("../R/make_html_table.R")
+## ADARs
+ADARs <- c("103", "104", "105")
+make_html_table(
+                EGIDs = ADARs,
+                rpkmsTable = rpkmsTable,
+                conds = conds,
+                reportDir = reportDir,
+                reportFile = "adar_expression",
+                reportSubTitle = "",
+                reportTitle = "Expression of the ADARs",
+                species = "Hs",
+                sampleData = sampleData)
+
+
+## DESeq MA plot
+p=openPage(file.path(reportDir,"differential_expression_DESeq"))
+hwrite('Differential expression (DESeq)', p, heading=2)
+hwrite('', p, br = TRUE)
+
+plot( log2(res$baseMean), res$log2FoldChange, 
+     pch=20, cex=.8, 
+     col = ifelse( res$pval < .05, 
+       rgb(255,0,0,50,maxColorValue=255), 
+       rgb(155,155,155,50,maxColorValue=255) ),
+     xlab="log2(Mean expression)",
+     ylab="log2FC (IFN - Control)",
+     main=paste("IFN vs. Control")
+     )
+abline(h=c(-2,2),lwd=2, lty = 2, col="orange")
+abline(h = 0, col = "dodgerblue", lty = 2)
+dev.copy(pdf, file = file.path(reportDir, "figures/DESeq_MA_plot.pdf"))
+dev.off()
+dev.copy(jpeg, file = file.path(reportDir, "figures/DESeq_MA_plot.jpg"))
+dev.off()
+
+hwriteImage(file.path("figures","DESeq_MA_plot.jpg"), p, link = file.path("figures","DESeq_MA_plot.pdf"), br = TRUE)
+hwrite('', p, br = TRUE)
+
+## heatmap of DESeq DE genes
+myrpkms <- rpkmsTable[match(as.character(sigGenes$id),
+                            as.character(rownames(rpkmsTable))),]
+myrpkms <- myrpkms[order(sigGenes$log2FoldChange),]
+#mycolors <- ifelse(conds == "IFN", "red", "grey")
+heatmap.2(as.matrix(myrpkms),
+          Rowv=NA,
+          trace = "none",
+          scale="row",
+          col=HMcols,
+          ColSideColors=mycolors,
+          margins = c(7,7),
+          main="IFN vs Control\nRPKMs of DE genes (CDS)")
+legend("topright",
+       legend=c("IFN-alpha", "IFN-alpha A/D", "Control"),
+       col=c("red", "firebrick4", "grey"),cex=0.7,box.col = "white", pch=16)
+dev.copy(pdf, file = file.path(reportDir, "figures", "DESeq_RPKM_heatmap.pdf"))
+dev.off()
+dev.copy(jpeg, file = file.path(reportDir, "figures", "DESeq_RPKM_heatmap.jpg"))
+dev.off()
+    
+hwrite('', p, br = TRUE)
+hwrite('', p, br = TRUE)
+
+hwriteImage(file.path("figures","DESeq_RPKM_heatmap.jpg"), p, link = file.path("figures","DESeq_RPKM_heatmap.pdf"), br = TRUE)
+hwrite('', p, br = TRUE)
+
+make_html_table(
+                EGIDs = sigGenes$id,
+                rpkmsTable = rpkmsTable,
+                conds = conds,
+                reportDir = reportDir,
+                reportFile = reportName,
+                reportTitle = "",
+                reportSubTitle = "Differential expression based on pvalue < 0.05 and abs(log2FC) > 2",
+                species = "Hs",
+                p = p,
+                sampleData = sampleData)
+
+
+
+#####
+
+
+
+
+
+
+
+
+
+
+
+@ 
+
+\subsection{edgeR}
+
+<<edgeR,fig=TRUE>>=
+## ########################################
+## Create comparisons
+## ########################################
+p=openPage(file.path(reportDir,"differential_expression_edgeR"))
+hwrite('Differential expression (edgeR)', p, heading=2)
+hwrite('', p, br = TRUE)
+library(edgeR)
+
+dge <- DGEList(countsTable, group = conds)
+dge <- calcNormFactors(dge)
+
+## filter very low read count genes as per edgeR vignette
+cpm.dge <- cpm(dge)
+dge <- dge[ rowSums(cpm.dge > 1) >=3, ]
+dge <- calcNormFactors(dge)
+dge
+
+## optional MDS plot
+library(limma)
+plotMDS(dge, main="MDS Plot", #xlim=c(-1,1), 
+        labels=sampleData$SAMID)
+@ 
+
+<<edgeR_part2, fig = TRUE>>=
+
+
+## estimate the common dispersion
+dge <- estimateCommonDisp(dge)
+de.com <- exactTest(dge)
+save(de.com, file = "output/de.com.RData")
+load("output/de.com.RData")
+topTags(de.com)
+detags.com <- rownames(topTags(de.com)$table)
+cpm.dge[detags.com, ]
+topTags(de.com, n = 10, sort.by = "logFC")
+
+summary(decideTestsDGE(de.com, p.value=0.01))
+
+detags500.com <- rownames(topTags(de.com, n = 500)$table)
+
+plotSmear(de.com, de.tags = detags500.com, main = "FC plot using common dispersion")
+abline(h = 0, col = "dodgerblue", lwd = 2, lty = 2)
+abline(h = c(-2, 2), col = "orange", lwd = 2, lty = 2)
+dev.copy(pdf, file = file.path(reportDir, "figures/edgeR_MAplot.pdf"))
+dev.off()
+dev.copy(jpeg, file = file.path(reportDir, "figures/edgeR_MAplot.jpg"))
+dev.off()
+
+hwriteImage(file.path("figures","edgeR_MAplot.jpg"), p, link = file.path("figures","edgeR_MAplot.pdf"), br = TRUE)
+hwrite('', p, br = TRUE)
+
+
+
+res <- topTags(de.com, n = dim(countsTable)[1])$table
+res <- res[order(res$adj.P.Val),]
+res$EGID <- rownames(res)
+
+sigUpInAD <- subset(res, logFC <= -2 & P.Value < 0.05)
+sigDownInAD <- subset(res, logFC >= 2 & P.Value < 0.05)
+
+sigGenes <- rbind(sigUpInAD,sigDownInAD)
+
+## heatmap of edgeR DE genes
+myrpkms <- rpkmsTable[match(as.character(sigGenes$EGID),
+                            as.character(rownames(rpkmsTable))),]
+myrpkms <- myrpkms[order(sigGenes$logFC),]
+heatmap.2(as.matrix(myrpkms),
+          Rowv=NA,
+          trace = "none",
+          scale="row",
+          col=HMcols,
+          ColSideColors=mycolors,
+          margins = c(7,7),
+          main="IFN vs Control\nRPKMs of DE genes (CDS)")
+legend("topright",
+       legend=c("IFN-alpha", "IFN-alpha A/D", "Control"),
+       col=c("red", "firebrick4", "grey"),cex=0.7,box.col = "white", pch=16)
+dev.copy(pdf, file = file.path(reportDir, "figures", "edgeR_RPKM_heatmap.pdf"))
+dev.off()
+dev.copy(jpeg, file = file.path(reportDir, "figures", "edgeR_RPKM_heatmap.jpg"))
+dev.off()
+    
+hwrite('', p, br = TRUE)
+hwriteImage(file.path("figures","edgeR_RPKM_heatmap.jpg"), p, link = file.path("figures","edgeR_RPKM_heatmap.pdf"), br = TRUE)
+hwrite('', p, br = TRUE)
+
+
+
+make_html_table(
+                EGIDs = sigGenes$EGID,
+                rpkmsTable = rpkmsTable,
+                conds = conds,
+                reportDir = reportDir,
+                reportFile = reportName,
+                reportTitle = "",
+                reportSubTitle = "Differential expression based on pvalue < 0.05 and abs(log2FC) > 2",
+                species = "Hs",
+                p = p,
+                sampleData = sampleData)
+
+
+
+
+@ 
+
+ 
+\subsection{GO analysis} 
+
+<<GO_analysis>>=
+
+## #######################
+## GO analysis
+## #######################
+## GO analysis
+
+## upregulated genes
+upreg <- sigUpInAD
+
+library(org.Mm.eg.db)
+
+myEGIDs <- as.character(upreg$EGID[upreg$EGID!=""])
+
+###########################################
+## now we fetch all the entrez gene IDs with GO mappings
+## (the EG universe used here should only contain EGs with mappings to GO)
+
+egUniverse <- mappedkeys(org.Mm.egGO)
+
+## toss any of our EGs that are not in the egUniverse (thus, have no GO mappings)
+
+myEGIDs <- myEGIDs[myEGIDs %in% egUniverse]
+
+## now we do some stats to look for over representation of GO categories in
+## our set of putatively hyper edited genes
+
+library(GOstats)
+## BP = Biological Process
+hgCutoff <- 0.01
+BPparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "BP", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+BPparamsCond <- BPparams
+conditional(BPparamsCond) <- TRUE
+
+BPhgOver <- hyperGTest(BPparams)
+BPhgCondOver <- hyperGTest(BPparamsCond)
+
+cutoff <- 0.01
+dim(summary(BPhgOver, pvalue = cutoff))
+summary(BPhgOver, pvalue = cutoff)
+dim(summary(BPhgOver, categorySize = 10))
+dim(summary(BPhgCondOver, pvalue = cutoff))
+summary(BPhgCondOver, pvalue = cutoff)
+
+htmlReport(BPhgOver, file = "output/upregInAD_BP_hgo.html")
+htmlReport(BPhgCondOver, file = "output/upregInAD_BP_hgco.html")
+
+## CC = Cellular Component
+CCparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "CC", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+CCparamsCond <- CCparams
+conditional(CCparamsCond) <- TRUE
+
+CChgOver <- hyperGTest(CCparams)
+CChgCondOver <- hyperGTest(CCparamsCond)
+
+cutoff = 0.01
+dim(summary(CChgOver,pvalue = cutoff))
+summary(CChgOver,pvalue = cutoff)
+dim(summary(CChgCondOver,pvalue = cutoff))
+summary(CChgCondOver,pvalue = cutoff)
+
+htmlReport(CChgOver, file = "output/upregInAD_CC_hgo.html")
+htmlReport(CChgCondOver, file = "output/upregInAD_CC_hgco.html")
+
+## MF = Molecular Function
+MFparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "MF", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+MFparamsCond <- MFparams
+conditional(MFparamsCond) <- TRUE
+
+MFhgOver <- hyperGTest(MFparams)
+MFhgCondOver <- hyperGTest(MFparamsCond)
+
+cutoff = 0.01
+dim(summary(MFhgOver,pvalue = cutoff))
+summary(MFhgOver,pvalue = cutoff)
+dim(summary(MFhgCondOver,pvalue = cutoff))
+summary(MFhgCondOver,pvalue = cutoff)
+
+htmlReport(MFhgOver, file = "output/upregInAD_MF_hgo.html")
+htmlReport(MFhgCondOver, file = "output/upregInAD_MF_hgco.html")
+
+####################################################
+## downregulated genes
+downreg <- sigDownInAD
+myEGIDs <- as.character(downreg$EGID[downreg$EGID!=""])
+
+###########################################
+## now we fetch all the entrez gene IDs with GO mappings
+## (the EG universe used here should only contain EGs with mappings to GO)
+
+egUniverse <- mappedkeys(org.Mm.egGO)
+
+## toss any of our EGs that are not in the egUniverse (thus, have no GO mappings)
+
+myEGIDs <- myEGIDs[myEGIDs %in% egUniverse]
+
+## now we do some stats to look for over representation of GO categories in
+## our set of putatively hyper edited genes
+
+library(GOstats)
+## BP = Biological Process
+hgCutoff <- 0.01
+BPparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "BP", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+BPparamsCond <- BPparams
+conditional(BPparamsCond) <- TRUE
+
+BPhgOver <- hyperGTest(BPparams)
+BPhgCondOver <- hyperGTest(BPparamsCond)
+
+cutoff <- 0.01
+dim(summary(BPhgOver, pvalue = cutoff))
+summary(BPhgOver, pvalue = cutoff)
+dim(summary(BPhgOver, categorySize = 10))
+dim(summary(BPhgCondOver, pvalue = cutoff))
+summary(BPhgCondOver, pvalue = cutoff)
+
+htmlReport(BPhgOver, file = "output/downregInAD_BP_hgo.html")
+htmlReport(BPhgCondOver, file = "output/downregInAD_BP_hgco.html")
+
+## CC = Cellular Component
+CCparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "CC", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+CCparamsCond <- CCparams
+conditional(CCparamsCond) <- TRUE
+
+CChgOver <- hyperGTest(CCparams)
+CChgCondOver <- hyperGTest(CCparamsCond)
+
+cutoff = 0.01
+dim(summary(CChgOver,pvalue = cutoff))
+summary(CChgOver,pvalue = cutoff)
+dim(summary(CChgCondOver,pvalue = cutoff))
+summary(CChgCondOver,pvalue = cutoff)
+
+htmlReport(CChgOver, file = "output/downregInAD_CC_hgo.html")
+htmlReport(CChgCondOver, file = "output/downregInAD_CC_hgco.html")
+
+## MF = Molecular Function
+MFparams <- new("GOHyperGParams", geneIds = myEGIDs,
+              universeGeneIds = egUniverse, annotation = "org.Mm.eg.db",
+              ontology = "MF", pvalueCutoff = hgCutoff, conditional = FALSE,
+              testDirection = "over")
+
+MFparamsCond <- MFparams
+conditional(MFparamsCond) <- TRUE
+
+MFhgOver <- hyperGTest(MFparams)
+MFhgCondOver <- hyperGTest(MFparamsCond)
+
+cutoff = 0.01
+dim(summary(MFhgOver,pvalue = cutoff))
+summary(MFhgOver,pvalue = cutoff)
+dim(summary(MFhgCondOver,pvalue = cutoff))
+summary(MFhgCondOver,pvalue = cutoff)
+
+htmlReport(MFhgOver, file = "output/downregInAD_MF_hgo.html")
+htmlReport(MFhgCondOver, file = "output/downregInAD_MF_hgco.html")
+
+
+@ 
+
+<<RNA-editing>>=
+
+## generate nuc tallies from bam files
+bam_files <- sapply(outputDirs,
+                    function(x) {
+                      bam_file <- dir(file.path(x,"bams"), pattern = "concordant_uniq.bam$", full.names = TRUE)
+                    })
+       source("../R/rna-editing.R")
+## these steps were done and output saved in output/
+#sapply(1:(dim(sampleData)[1]),
+#              function(x) {
+#                do_bam_tally(bam_file = bam_files[x],
+#                             output_file = file.path("output",
+#                               paste(sampleData$SAMID[x], "bam_tally.txt", sep = ".")))
+#              })
+       
+sapply(1:(dim(sampleData)[1]),
+       function(x) {
+         parse_bam_tally(bam_tally_output_file = file.path("output", 
+                           paste(sampleData$SAMID[x],"bam_tally.txt", sep = ".")),
+                         output_file = file.path("output",
+                           paste(sampleData$SAMID[x], "parsed_bam_tally.txt", sep = ".")))
+       })
+
+
+@ 
+
+<<SessionInfo>>=
+sessionInfo()
+@ 
+\end{document}

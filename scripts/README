@@ -1,0 +1,82 @@
+This README covers the usage of many of the functions and scripts
+found in the scripts directory.
+
+#################################
+## Running the variant calling ##
+#################################
+
+The first set of scripts covered are the basic wrappers for running
+the variant calling and T/N comparison functions from the command
+line.
+
+run_callVar_wrapper.R will run the single sample variant calling using
+the same parameters as the pipeline. This script may need modified
+slightly due to some changes in the pipeline code. It used to depend
+on RNAseqGenie however this package seems to no longer exist. The only
+function needed is saveWithID and sourcing in this file will solve the
+issue.
+
+run_TN_wrapper.R is similar and suffers from a similar issue due to
+the removal of RNAseqGenie.
+
+
+#############################
+## Mutations by transcript ##
+#############################
+
+The second set of scripts covered are the scripts used to generate the
+transcript mutation matrix.
+
+To generate the mutation matrix for a set of sample you will want to
+open the file wrap_annotate_trans.R. This wrapper function loads the
+needed data and scripts to generate the final files. Running this
+wrapper depends on having generated variantEffectPredictor results for
+the set of tumor-specific calls. You can look at the example_runs
+directory to see how to generate these files. In addition the mkRuns.R
+file has a bit of code for generating these run files given a set of
+SAM IDs. After generating these VEP file you will want to edit dir to
+point to the directory where they can be found. The first half of this
+script simply data. The file then contains a simple function that
+generates the intermediate object followed by a bit of code to
+summarize this.
+
+
+############################
+## RNA vs Exome frequency ##
+############################
+
+
+The Next file is make_RNA_EX_gene_plot.R. This script will generate
+the "RNA vs Exome" fequency plots per gene for Robert. Again the basic
+set up is the same. The first half of the script loads the data while
+the second half contains a function that needs to be loaded and will
+then generate the summary.  there is also a simple plot call to
+generate the per gene plots.
+
+In addition to this there is a script N_NS_RNA_EX.R that contains a
+single function. This function will generate a similar plot to the
+above RNA/DNA comparison except that it will make the plot only for a
+single sample and it will be across all genes. This will also color
+the mutations by non-synonymous /synonymous status.
+
+#################################
+## Validation to array and RNA ##
+#################################
+
+The scripts array_het.R and arraySNP_v_seq.R contain methods for
+calculating the error rates with respect to the SNP array data and
+also for making plots of this data. Further work is still needed here
+to reslove issues with the definition of hom-ref on the array. I am
+still running into issues with this.
+
+Further the scripts rnaValRate.R and rnaValWrapper.R have methods for
+checking the Exome SNVs against those seen in the RNA.
+
+######################
+## mutation by gene ##
+######################
+
+getAlleleByLocus_mod.R has code to get mutation calls on a per gene
+bases. For single gene questions this is much faster than loading the
+variant call GRanges.
+
