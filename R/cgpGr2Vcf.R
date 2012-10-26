@@ -9,7 +9,7 @@
 ##           and the other columns are Number, Type and Description.
 ## fixed: REF and ALT
 ## info: N/A
-## geno: list of single-column matrices for GT, AR, RR, DP, AAP, RAP
+## geno: list of single-column matrices for AR, RR, DP, AAP, RAP
 
 variantGR2Vcf <- function(x, sample.id, project = NULL) {
   location <- factor(x$location, unique(x$location))
@@ -42,8 +42,7 @@ variantGR2Vcf <- function(x, sample.id, project = NULL) {
   }
   
   geno <-
-    SimpleList(GT= genoMatrix("./."),
-               AR= genoMatrix(split(x$count, location)),
+    SimpleList(AR= genoMatrix(split(x$count, location)),
                RR= genoMatrix(x$count.ref[start(locationRle)]),
                DP= genoMatrix(x$count.total[start(locationRle)]),
                AAP=genoMatrix(split(as.integer(x$count > 0L), location)),
