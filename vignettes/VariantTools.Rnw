@@ -61,11 +61,9 @@ cancer cell lines from the same individual. H1993 is derived from a
 metastatis and H2073 is derived from the primary tumor. 
 
 Below, we call variants from a region around the p53 gene:
-<<roi, echo=FALSE>>=
-p53 <- gmapR:::exonsOnTP53Genome("TP53")
-@ 
 <<callVariants>>=
 library(VariantTools)
+p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
 tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
@@ -285,7 +283,33 @@ vcf <- variantGR2Vcf(called.variants, sample.id = "H1993",
 writeVcf(vcf, "H1993.vcf", index = TRUE)
 @ 
 
-% \subsection{Checking variant concordance}
+\section{Finding Wildtype and No-call Regions}
+
+So far, our analysis has yielded a set of positions that are likely to
+be variants. We have not made any claims about the status of the
+positions outside of that set. For this, we need to decide, for each
+position, whether there was sufficient coverage to detect a variant,
+if one existed. The following call carries out a power test to decide
+whether a region is variant, wildtype or is unable to be called due to
+lack of coverage. The variants must have been called using the filters
+returned by \Rfunction{VariantCallingFilters}. The algorithm depends
+on the filter parameter settings, so it is possible and indeed
+required for the user to pass filter object used for calling the
+variants. This requirement is an attempt to ensure consistency. This
+will be made more convenient in the future.
+<<callWildtype>>=
+wildtype <- callWildtype(bam, called.variants, VariantCallingFilters(), 
+                         power = 0.85)
+@
+%
+The returned object is a logical \Rclass{RleList} object, with
+\Rcode{TRUE} for wildtype, \Rcode{FALSE} for variant and \Rcode{NA}
+for no-call. Thus, we could calculate the fraction called as follows:
+<<percentageCalled>>=
+mean(!is.na(wildtype))
+@ 
+
+% \section{Checking variant concordance}
 
 % <<variantConcordance>>=
 % concord <- checkVariantConcordance(tumor.variants, normal.variants)

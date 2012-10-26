@@ -1,8 +1,43 @@
-callWildtype <- function(cov, var_gr, power=0.999, plower=0.2, perror=1/1000) {
-  callable <- callCallable(cov, plower = plower, perror = perror, power = power)
+### FIXME: this is too specific to the LR test. To make it more
+### generic, we could combine p.error and p.lower into a special
+### params object that would be used both for calling and for this
+### function. Then, we would have a method that dispatches on that
+### class. This params object could be a FilterRule, but we are
+### currently not using polymorphism for FilterRule objects.
+
+minCallableCoverage <- function(calling.filters, power = 0.80,
+                                max.coverage = 1000L)
+{
+  lr.filter <- calling.filters$likelihoodRatio
+  if (is.null(lr.filter))
+    stop("'likelihoodRatio' filter not found in 'calling.filters'")
+  rc.filter <- calling.filters$readCount
+  if (is.null(rc.filter))
+    stop("'readCount' filter not found in 'calling.filters'")
+  size <- seq(1L, max.coverage)
+  f <- freq(params(lr.filter)$p.lower, params(lr.filter)$p.error, 1L)
+  p <- 1 - pbinom(round(pmax(params(rc.filter)$min.count, size * f)), size,
+                  params(lr.filter)$p.lower)
+  head(size[p > power], 1L)
+}
+
+setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
+
+setMethod("callCallable", "RleList", function(x, ...) {
+  cutoff <- minCallableCoverage(...)
+  x >= cutoff
+})
+setMethod("callCallable", "ANY", function(x, ...) {
+  cov <- coverage(x, drop.D.ranges = TRUE)
+  callCallable(cov, ...)
+})
+
+callWildtype <- function(reads, var.gr, calling.filters, ...) {
+  callable <- callCallable(reads, calling.filters, ...)
   wildtype <- callable
   wildtype[!callable] <- NA
-  rl <- split(ranges(var_gr), factor(seqnames(var_gr), names(cov)))
-  wildtype[rl] <- FALSE
+  seqlevels(var.gr) <- names(callable)
+  var.rl <- split(ranges(var.gr), seqnames(var.gr))
+  wildtype[var.rl] <- FALSE
   wildtype
 }

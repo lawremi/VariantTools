@@ -13,13 +13,15 @@ export(variantGR2Vcf)
 
 export(callSampleSpecificVariants, SampleSpecificVariantFilters)
 
+export(callWildtype, minCallableCoverage)
+
 ## API for next release
 ## export(checkVariantConcordance,
-##        callCallable, callWildtype, callableFraction, annotateTrans,
+##        callableFraction, annotateTrans,
 ##        plotTNVariantsAlongGenome, TwoSampleFET, plotTiTv)
 
 
 ## API that will likely be (re)moved
-## export(VEP2gr) # FIXME: we need a VEP package
+## export(VEP2gr) # moving to VariantAnnotation or some other package
 ## export(detectQualityType) # not exporting for now
 ## export(trans2genome) # FIXME: push up to GenomicRanges, based on map?
