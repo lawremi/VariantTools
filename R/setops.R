@@ -4,7 +4,11 @@ setGeneric("%variant_in%", function(x, y) standardGeneric("%variant_in%"))
 
 setMethod("%variant_in%", c("GenomicRanges", "GenomicRanges"),
           function(x, y) {
-            variantKeys(x) %in% variantKeys(y)
+            hits <- findOverlaps(x, y)
+            same.alt <- x$alt[queryHits(hits)] == y$alt[subjectHits(hits)]
+            same <- logical(length(x))
+            same[queryHits(hits)[same.alt]] <- TRUE
+            same
           })
 
 variant_setdiff <- function(x, y) {
