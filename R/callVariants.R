@@ -38,9 +38,9 @@ VariantCallingFilters <-
                    BinomialLRFilter(p.lower, p.error, use.high.qual)))
 }
 
-MinCountFilter <- function(min = 2L, use.high.qual = TRUE) {
+MinCountFilter <- function(min.count = 2L, use.high.qual = TRUE) {
   function(x) {
-    mcols(x)[[if (use.high.qual) "high.quality" else "count"]] >= min
+    mcols(x)[[if (use.high.qual) "high.quality" else "count"]] >= min.count
   }
 }
 
