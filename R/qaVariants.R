@@ -7,7 +7,7 @@ sanitizeVariants <- function(x, ...) {
 }
 
 VariantSanityFilters <- function() {
-  FilterRules(list(nonNRef = NonNRefFilter()))
+  FilterRules(list(nonRef = NonRefFilter(), nonNRef = NonNRefFilter()))
 }
 
 qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
