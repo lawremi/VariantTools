@@ -8,6 +8,12 @@
 minCallableCoverage <- function(calling.filters, power = 0.80,
                                 max.coverage = 1000L)
 {
+  if (!isSingleNumber(power) || power < 0 || power > 1)
+    stop("'power' must be a single, non-NA number in [0,1]")
+  if (!isSingleNumber(max.coverage) || max.coverage < 0)
+    stop("'max.coverage' must be a single, non-negative, non-NA number")
+  if (!is(calling.filters, "FilterRules"))
+    stop("'calling.filters' must be a FilterRules object")
   lr.filter <- calling.filters$likelihoodRatio
   if (is.null(lr.filter))
     stop("'likelihoodRatio' filter not found in 'calling.filters'")
