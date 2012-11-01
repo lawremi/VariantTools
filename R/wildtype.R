@@ -34,7 +34,7 @@ setMethod("callCallable", "RleList", function(x, param, ...) {
     stop("'param' must be a BamTallyParam")
   cutoff <- minCallableCoverage(...)
   which.rl <- bamWhich(param)
-  callable <- x < 0L # easy way to make FALSE RleList
+  callable <- relist(Rle(FALSE, sum(as.numeric(elementLengths(x)))), x)
   callable[which.rl] <- x[which.rl] >= cutoff
   callable
 })
