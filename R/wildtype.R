@@ -29,21 +29,26 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
 
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
 
-setMethod("callCallable", "RleList", function(x, ...) {
+setMethod("callCallable", "RleList", function(x, param, ...) {
+  if (!is(param, "BamTallyParam"))
+    stop("'param' must be a BamTallyParam")
   cutoff <- minCallableCoverage(...)
-  x >= cutoff
+  which.rl <- bamWhich(param)
+  callable <- x < 0L # easy way to make FALSE RleList
+  callable[which.rl] <- x[which.rl] >= cutoff
+  callable
 })
 setMethod("callCallable", "ANY", function(x, ...) {
   cov <- coverage(x, drop.D.ranges = TRUE)
   callCallable(cov, ...)
 })
 
-callWildtype <- function(reads, var.gr, calling.filters, ...) {
-  callable <- callCallable(reads, calling.filters, ...)
+callWildtype <- function(reads, variants, calling.filters, param, ...) {
+  callable <- callCallable(reads, calling.filters, param, ...)
   wildtype <- callable
   wildtype[!callable] <- NA
-  seqlevels(var.gr) <- names(callable)
-  var.rl <- split(ranges(var.gr), seqnames(var.gr))
+  seqlevels(variants) <- names(callable)
+  var.rl <- as(variants, "RangesList")
   wildtype[var.rl] <- FALSE
   wildtype
 }

@@ -295,11 +295,11 @@ lack of coverage. The variants must have been called using the filters
 returned by \Rfunction{VariantCallingFilters}. The algorithm depends
 on the filter parameter settings, so it is possible and indeed
 required for the user to pass filter object used for calling the
-variants. This requirement is an attempt to ensure consistency. This
+variants. This requirement is an attempt to ensure consistency and
 will be made more convenient in the future.
 <<callWildtype>>=
 wildtype <- callWildtype(bam, called.variants, VariantCallingFilters(), 
-                         power = 0.85)
+                         tally.param, power = 0.85)
 @
 %
 The returned object is a logical \Rclass{RleList} object, with
