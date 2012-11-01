@@ -44,7 +44,8 @@ setMethod("callCallable", "ANY", function(x, ...) {
 })
 
 callWildtype <- function(reads, variants, calling.filters, param, ...) {
-  callable <- callCallable(reads, calling.filters, param, ...)
+  callable <- callCallable(reads, calling.filters = calling.filters,
+                           param = param, ...)
   wildtype <- callable
   wildtype[!callable] <- NA
   seqlevels(variants) <- names(callable)
