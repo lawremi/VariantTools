@@ -53,13 +53,20 @@ setMethod("callCallable", "RleList", function(x, param, global = TRUE, ...) {
 })
 
 setMethod("callCallable", "ANY", function(x, param, ...) {
-  cov <- coverage(x, drop.D.ranges = TRUE, param = param)
+  scan.param <- ScanBamParam(which = bamWhich(param))
+  cov <- coverage(x, drop.D.ranges = TRUE, param = scan.param)
   callCallable(cov, param, ...)
 })
 
 callWildtype <- function(reads, variants, calling.filters, param, global = TRUE,
                          ...)
 {
+  if (!isTRUEorFALSE(global))
+    stop("'global' must be TRUE or FALSE")
+  which.all.width.one <-
+    all(width(unlist(bamWhich(param), use.names = FALSE)) == 1L)
+  if (!global && !which.all.width.one)
+    stop("All 'bamWhich' ranges must be of length one for 'global = FALSE'")
   callable <- callCallable(reads, calling.filters = calling.filters,
                            param = param, global = global, ...)
   wildtype <- callable
@@ -69,8 +76,6 @@ callWildtype <- function(reads, variants, calling.filters, param, global = TRUE,
     seqlevels(variants) <- names(callable)
     var <- as(variants, "RangesList")
   } else {
-    if (!all(width(unlist(bamWhich(param), use.names = FALSE)) == 1L))
-      stop("All 'bamWhich' ranges must be of length one for 'global = FALSE'")
     var <- bamWhich(param) %in% variants
   }
   wildtype[var] <- FALSE
