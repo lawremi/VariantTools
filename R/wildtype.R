@@ -29,27 +29,50 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
 
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
 
-setMethod("callCallable", "RleList", function(x, param, ...) {
+setMethod("callCallable", "RleList", function(x, param, global = TRUE, ...) {
   if (!is(param, "BamTallyParam"))
     stop("'param' must be a BamTallyParam")
   cutoff <- minCallableCoverage(...)
   which.rl <- bamWhich(param)
-  callable <- relist(Rle(FALSE, sum(as.numeric(elementLengths(x)))), x)
-  callable[which.rl] <- x[which.rl] >= cutoff
-  callable
-})
-setMethod("callCallable", "ANY", function(x, ...) {
-  cov <- coverage(x, drop.D.ranges = TRUE)
-  callCallable(cov, ...)
+  if (length(which.rl) > 0L) {
+    if (global) {
+      if (length(setdiff(seqlevels(which.rl), names(x))) > 0L)
+        stop("Some seqlevels are missing from coverage")
+      common.seqnames <- intersect(names(which.rl), names(x))
+      x.in.which <- x[common.seqnames]
+      callable <- seqapply(elementLengths(x.in.which), Rle, values = NA)
+      callable[which.rl] <- x.in.which[which.rl] >= cutoff
+      callable
+    } else {
+      cov <- extractCoverageForPositions(x, as(which.rl, "GRanges"))
+      cov >= cutoff
+    }
+  } else {
+    x >= cutoff
+  }
 })
 
-callWildtype <- function(reads, variants, calling.filters, param, ...) {
+setMethod("callCallable", "ANY", function(x, param, ...) {
+  cov <- coverage(x, drop.D.ranges = TRUE, param = param)
+  callCallable(cov, param, ...)
+})
+
+callWildtype <- function(reads, variants, calling.filters, param, global = TRUE,
+                         ...)
+{
   callable <- callCallable(reads, calling.filters = calling.filters,
-                           param = param, ...)
+                           param = param, global = global, ...)
   wildtype <- callable
+  callable[is.na(callable)] <- FALSE
   wildtype[!callable] <- NA
-  seqlevels(variants) <- names(callable)
-  var.rl <- as(variants, "RangesList")
-  wildtype[var.rl] <- FALSE
+  if (global) {
+    seqlevels(variants) <- names(callable)
+    var <- as(variants, "RangesList")
+  } else {
+    if (!all(width(unlist(bamWhich(param), use.names = FALSE)) == 1L))
+      stop("All 'bamWhich' ranges must be of length one for 'global = FALSE'")
+    var <- bamWhich(param) %in% variants
+  }
+  wildtype[var] <- FALSE
   wildtype
 }
