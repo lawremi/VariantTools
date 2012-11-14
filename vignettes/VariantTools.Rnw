@@ -309,6 +309,14 @@ for no-call. Thus, we could calculate the fraction called as follows:
 mean(!is.na(wildtype))
 @ 
 
+Sometimes it is desirable for the wildtype calls to be returned as
+simple vector, with a logical value for each position (range of width
+one) in \Rfunction{bamWhich}.  Such a vector is returned when
+\Rcode{global = FALSE} is passed to \Rfunction{callWildtype}. This is
+the same as extracting the positions from the ordinary \Rclass{Rle}
+return value, but it is implemented more efficiently, at least for a
+relatively small number of positions.
+
 % \section{Checking variant concordance}
 
 % <<variantConcordance>>=
