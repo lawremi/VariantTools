@@ -15,12 +15,23 @@ setMethod("tallyVariants", "BamFile",
             if (is.null(space(which))) {
               genome <- param@genome
               si <- intersect(seqinfo(genome), seqinfo(x))
-              unlist(applyByChromosome(si, bam_tally_region,
-                                       mc.cores = mc.cores),
-                     use.names = FALSE)
+              ans <- applyByChromosome(si, bam_tally_region,
+                                       mc.cores = mc.cores)
             } else {
-              bam_tally_region(which)              
+              which <- as(which, "GRanges")
+              if (length(which) == 1L) {
+                chunks <- breakInChunks(width(which),
+                                        ceiling(width(which) / mc.cores))
+                which <- GRanges(seqnames(which),
+                                 IRanges(start(which) + start(chunks) - 1L,
+                                         width = width(chunks)))
+              }
+              ind <- seq_len(length(which))
+              ans <- safe_mclapply(ind, function(i) {
+                bam_tally_region(which[i])
+              }, mc.cores = mc.cores)
             }
+            unlist(ans, use.names = FALSE)
           })
 
 setMethod("tallyVariants", "character", function(x, ...) {
