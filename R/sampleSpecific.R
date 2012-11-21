@@ -69,7 +69,8 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
                                                     control.cov,
                                                     calling.filters,
                                                     ...)
-            subsetByFilter(case.called, filters)
+            case.specific <- subsetByFilter(case.called, filters)
+            annotateWithControlCounts(case.specific, control, control.cov)
           })
 
 setMethod("callSampleSpecificVariants", c("BamFile", "BamFile"),
@@ -153,3 +154,14 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, use.high.qual,
   }
 }
 
+annotateWithControlCounts <- function(case.specific, control, control.cov) {
+  m <- variantMatch(case.specific, control)
+  control.count <- control$count[m]
+  control.count[is.na(control.count)] <- 0L
+  control.count.total <- control$count.total[m]
+  control.count.total[is.na(m)] <-
+    extractCoverageForPositions(control.cov, case.specific[is.na(m)])
+  case.specific$control.count <- control.count
+  case.specific$control.count.total <- control.count.total
+  case.specific
+}

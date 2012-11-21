@@ -1,14 +1,18 @@
 variantKeys <- function(x) paste0(x$location, x$alt)
 
+variantMatch <- function(x, y) {
+  hits <- findOverlaps(x, y)
+  same.alt <- x$alt[queryHits(hits)] == y$alt[subjectHits(hits)]
+  ans <- rep(NA, length(x))
+  ans[queryHits(hits)[same.alt]] <- subjectHits(hits)[same.alt]
+  ans
+}
+
 setGeneric("%variant_in%", function(x, y) standardGeneric("%variant_in%"))
 
 setMethod("%variant_in%", c("GenomicRanges", "GenomicRanges"),
           function(x, y) {
-            hits <- findOverlaps(x, y)
-            same.alt <- x$alt[queryHits(hits)] == y$alt[subjectHits(hits)]
-            same <- logical(length(x))
-            same[queryHits(hits)[same.alt]] <- TRUE
-            same
+            !is.na(variantMatch(x, y))
           })
 
 variant_setdiff <- function(x, y) {
