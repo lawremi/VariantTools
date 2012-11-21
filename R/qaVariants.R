@@ -15,7 +15,7 @@ qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
   subsetByFilter(x, qa.filters)
 }
 
-VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-3)
+VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4)
 {
   c(VariantSanityFilters(),
     FilterRules(c(cycleCount = CycleCountFilter(cycle.count),
@@ -53,7 +53,7 @@ BinomialErrorFilter <- function(p.error = 1/1000, p.value = 0.01) {
   }
 }
 
-FisherStrandFilter <- function(p.value = 1e-3) {
+FisherStrandFilter <- function(p.value = 1e-4) {
   function(x) {
     p <- with(mcols(x),
               fisher_p_vectorized(count.pos.ref,
