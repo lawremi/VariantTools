@@ -31,7 +31,7 @@ setMethod("callVariants", "GenomicRanges",
 
 VariantCallingFilters <-
   function(read.count = 2L, p.lower = 0.2,
-           if (use.high.qual) p.error = 1/10000 else 1/100,
+           p.error = if (use.high.qual) 1/10000 else 1/100,
            use.high.qual = TRUE)
 {
   c(VariantSanityFilters(),
@@ -48,7 +48,7 @@ MinCountFilter <- function(min.count = 2L, use.high.qual = TRUE) {
 
 BinomialLRFilter <-
   function(p.lower = 0.2,
-           if (use.high.qual) p.error = 1/10000 else 1/100,
+           p.error = if (use.high.qual) 1/10000 else 1/100,
            use.high.qual = TRUE)
 {
   function(x) {
