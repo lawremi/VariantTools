@@ -15,12 +15,14 @@ qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
   subsetByFilter(x, qa.filters)
 }
 
-VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4)
+VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4,
+                             read.pos.p.value = 1e-4)
 {
   c(VariantSanityFilters(),
     FilterRules(c(cycleCount = CycleCountFilter(cycle.count),
                   fisherStrand = FisherStrandFilter(fisher.strand.p.value),
-                  cycleBin = InternalCycleBinFilter())))
+                  cycleBin = InternalCycleBinFilter(),
+                  readPosTTest = ReadPositionTTestFilter(read.pos.p.value))))
 }
 
 ## With new gmapR, this is only necessary for filtering the ref N's.
@@ -72,5 +74,23 @@ InternalCycleBinFilter <- function(min.count = 1L) {
     if (length(internal_columns) > 0L)
       rowSums(as.matrix(mcols(x)[internal_columns])) >= min.count
     else rep.int(TRUE, length(x))
+  }
+}
+
+t.test_welch <- function(m1, m2, s1, s2, n1, n2) {
+  s <- s1 / n1 + s2 / n2
+  t <- (m1 - m2) / sqrt(s)
+  v <- s^2 / ((s1 / n1)^2 / (n1 - 1L) + (s2 / n2)^2 / (n2 - 1L))
+  pt(-abs(t), v) * 2L
+}
+
+ReadPositionTTestFilter <- function(p.value.cutoff = 1e-4) {
+  function(x) {
+    p <- with(mcols(x), t.test_welch(read.pos.mean, read.pos.mean.ref,
+                                     read.pos.var, read.pos.var.ref,
+                                     count, count.ref))
+    ans <- p > p.value.cutoff
+    ans[is.na(ans)] <- TRUE
+    ans
   }
 }
