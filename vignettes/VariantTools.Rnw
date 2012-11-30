@@ -256,7 +256,7 @@ sample-specific variants, one may pass filter parameters directly to
 customizing some parameters.
 <<callSomaticMutations-readCount>>=
 calling.filters <- VariantCallingFilters(read.count = 3L)
-somatic <- callSampleSpecificVariants(tumor.bam, normal.bam, tally.param,
+somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param,
                                       calling.filters = calling.filters,
                                       power = 0.9, p.value = 0.001)
 @ 
