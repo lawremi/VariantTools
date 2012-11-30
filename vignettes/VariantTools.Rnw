@@ -215,58 +215,51 @@ implemented externally to the \Rpackage{VariantTools} package. This is
 the primary means of extending and customizing the variant calling
 workflow.
 
-% \section{Comparing variant sets across samples}
+\section{Comparing variant sets across samples}
 
-% We have already called variants for the metastatic H1993 sample. We
-% leave the processing of the primary tumor H2073 sample as an exercise
-% to the reader and instead turn our attention to detecting the variants
-% that are specific to the metastatic sample, as compared to the primary
-% tumor.
+So far, we have called variants for the metastatic H1993 sample. We
+leave the processing of the primary tumor H2073 sample as an exercise
+to the reader and instead turn our attention to detecting the variants
+that are specific to the metastatic sample, as compared to the primary
+tumor.
 
-% \subsection{Calling sample-specific variants}
+\subsection{Calling sample-specific variants}
 
-% The function \Rfunction{callSampleSpecificVariants} takes the case
-% (e.g., tumor) sample and control (e.g., matched normal) sample as
-% input. In our case, we are comparing the metastatic line (H1993) to
-% the primary tumor line (H2073) from the same patient, a smoker. To
-% avoid inconsistencies, it is recommended to pass BAM files as input,
-% for which tallies are automatically generated, subjected to QA, and
-% called as variants vs. reference, prior to determining the
-% sample-specific variants. 
+The function \Rfunction{callSampleSpecificVariants} takes the case
+(e.g., tumor) sample and control (e.g., matched normal) sample as
+input. In our case, we are comparing the metastatic line (H1993) to
+the primary tumor line (H2073) from the same patient, a smoker. To
+avoid inconsistencies, it is recommended to pass BAM files as input,
+for which tallies are automatically generated, subjected to QA, and
+called as variants vs. reference, prior to determining the
+sample-specific variants. 
 
-% Here, we find the somatic mutations from a matched tumor/normal
-% pair. Since we are starting from BAM files, we have to provide
-% \Robject{tally.param} for the tally step. 
-% <<callSomaticMutations>>=
-% options(error=recover)
-% control.raw <- tallyVariants(bams$H2073, tally.param)
-% control.called.noqa <- callVariants(control.raw)
-% control.called <- callVariants(qaVariants(control.raw))
-% control.cov <- coverage(bams$H2073, drop.D.ranges = TRUE)
-% filters <- SampleSpecificVariantFilters(control.raw, control.cov,
-%                                         VariantCallingFilters())
-% somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param)
-% @ 
-% %$
-% This can be time-consuming for the entire genome, since the tallies
-% need to be computed. To avoid repeated computation of the tallies, the
-% user can pass the raw tally \Rclass{GRanges} objects instead of the
-% BAM files. This is less safe, because anything could have happened to
-% those \Rclass{GRanges} objects.
+Here, we find the somatic mutations from a matched tumor/normal
+pair. Since we are starting from BAM files, we have to provide
+\Robject{tally.param} for the tally step. 
+<<callSomaticMutations>>=
+somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param)
+@ 
+%$
+This can be time-consuming for the entire genome, since the tallies
+need to be computed. To avoid repeated computation of the tallies, the
+user can pass the raw tally \Rclass{GRanges} objects instead of the
+BAM files. This is less safe, because anything could have happened to
+those \Rclass{GRanges} objects.
 
-% The QA and initial calling are optionally controlled by passing
-% \Rclass{FilterRules} objects, typically those returned by
-% \Rfunction{VariantQAFilters} and \Rfunction{VariantCallingFilters},
-% respectively. For controlling the final step, determining the
-% sample-specific variants, one may pass filter parameters directly to
-% \Rfunction{callSampleSpecificVariants}.  Here is an example of
-% customizing some parameters.
-% <<callSomaticMutations-readCount>>=
-% calling.filters <- VariantCallingFilters(read.count = 3L)
-% somatic <- callSampleSpecificVariants(tumor.bam, normal.bam, tally.param,
-%                                       calling.filters = calling.filters,
-%                                       power = 0.9, p.value = 0.001)
-% @ 
+The QA and initial calling are optionally controlled by passing
+\Rclass{FilterRules} objects, typically those returned by
+\Rfunction{VariantQAFilters} and \Rfunction{VariantCallingFilters},
+respectively. For controlling the final step, determining the
+sample-specific variants, one may pass filter parameters directly to
+\Rfunction{callSampleSpecificVariants}.  Here is an example of
+customizing some parameters.
+<<callSomaticMutations-readCount>>=
+calling.filters <- VariantCallingFilters(read.count = 3L)
+somatic <- callSampleSpecificVariants(tumor.bam, normal.bam, tally.param,
+                                      calling.filters = calling.filters,
+                                      power = 0.9, p.value = 0.001)
+@ 
 
 \section{Exporting the calls as VCF}
 
