@@ -52,7 +52,7 @@ BinomialLRFilter <-
            use.high.qual = TRUE)
 {
   function(x) {
-    freq <- freq(p.error, p.lower, 1)
+    freq <- freq(p.error, p.lower)
     sampleFreq <- if (use.high.qual) {
       with(values(x), high.quality / (high.quality.total))
     } else {
@@ -64,7 +64,7 @@ BinomialLRFilter <-
   }
 }
 
-freq <- function(p0, p1, n, C) {
+freq <- function(p0, p1, n = if (C == 1L) 1L else n, C = 1L) {
   num <- (1/n) * log(C) + log(1-p0) - log(1-p1)
   denom <- log(p1) - log(p0) + log(1-p0) - log(1-p1)
   num/denom

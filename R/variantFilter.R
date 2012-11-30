@@ -92,7 +92,7 @@ variantFilter <- function(granges,
     freq_granges <- lowcountgranges[res < lrt_p]
   }
   if(lr ==TRUE){
-    freq <- freq(error, lower, 1)
+    freq <- freq(error, lower)
     if(useQual==TRUE){
       lowcountgranges <- lowcountgranges[(values(lowcountgranges)$high.quality+values(lowcountgranges)$high.quality.ref) !=0]
       freq_granges <- lowcountgranges[(values(lowcountgranges)$high.quality /

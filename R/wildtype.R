@@ -21,7 +21,7 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
   if (is.null(rc.filter))
     stop("'readCount' filter not found in 'calling.filters'")
   size <- seq(1L, max.coverage)
-  f <- freq(params(lr.filter)$p.lower, params(lr.filter)$p.error, 1L)
+  f <- freq(params(lr.filter)$p.lower, params(lr.filter)$p.error)
   p <- 1 - pbinom(round(pmax(params(rc.filter)$min.count, size * f)), size,
                   params(lr.filter)$p.lower)
   head(size[p > power], 1L)
