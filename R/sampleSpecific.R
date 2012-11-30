@@ -93,12 +93,13 @@ setMethod("callSampleSpecificVariants", c("character", "character"),
 SampleSpecificVariantFilters <-
   function(control, control.cov, calling.filters, power = 0.8, p.value = 0.01)
 {
-  lr.filter <- calling.filters$likelihoodRatio
   control.called <- callVariants(control, calling.filters)  
   FilterRules(c(calledInControl = SetdiffVariantsFilter(control.called),
-                power = CallableInOtherFilter(control.cov, lr.filter, power),
+                power = CallableInOtherFilter(control.cov, calling.filters,
+                  power),
                 extremity = LowerFrequencyInOtherFilter(control, control.cov,
-                  params(lr.filter)$use.high.qual, p.value)
+                  params(calling.filters$likelihoodRatio)$use.high.qual,
+                  p.value)
                 ))
 }
 
@@ -128,13 +129,20 @@ extractCoverageForPositions <- function(cov, pos) {
   ans
 }
 
-CallableInOtherFilter <- function(other.cov, lr.filter, power = 0.8)
+CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
 {
+  lr.filter <- calling.filters$likelihoodRatio
+  if (is.null(lr.filter))
+    stop("'likelihoodRatio' filter not found in 'calling.filters'")
   lr.params <- params(lr.filter)
+  rc.filter <- calling.filters$readCount
+  if (is.null(rc.filter))
+    stop("'readCount' filter not found in 'calling.filters'")
   function(x) {
     other.n <- extractCoverageForPositions(other.cov, x)
-    f <- freq(lr.params$p.error, lr.params$p.lower, 1)
-    1 - pbinom(f * other.n, other.n, lr.params$p.lower) > power
+    f <- freq(lr.params$p.error, lr.params$p.lower)
+    min.count <- round(pmax(params(rc.filter)$min.count, other.n * f))
+    1 - pbinom(min.count, other.n, lr.params$p.lower) > power
   }
 }
 
@@ -155,10 +163,10 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, use.high.qual,
 }
 
 annotateWithControlCounts <- function(case.specific, control, control.cov) {
-  m <- variantMatch(case.specific, control)
-  control.count <- control$count[m]
+  m <- matchVariants(case.specific, control)
+  control.count <- control$high.quality[m]
   control.count[is.na(control.count)] <- 0L
-  control.count.total <- control$count.total[m]
+  control.count.total <- control$high.quality.total[m]
   control.count.total[is.na(m)] <-
     extractCoverageForPositions(control.cov, case.specific[is.na(m)])
   case.specific$control.count <- control.count
