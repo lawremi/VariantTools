@@ -8,6 +8,13 @@ matchVariants <- function(x, y) {
   ans
 }
 
+mergeVariantInfo <- function(x, info) {
+  m <- matchVariants(x, info)
+  info.cols <- setdiff(colnames(mcols(info)), colnames(mcols(x)))
+  mcols(x)[info.cols] <- lapply(mcols(info)[info.cols], `[`, m)
+  x
+}
+
 setGeneric("%variant_in%", function(x, y) standardGeneric("%variant_in%"))
 
 setMethod("%variant_in%", c("GenomicRanges", "GenomicRanges"),

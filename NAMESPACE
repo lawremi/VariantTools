@@ -15,6 +15,9 @@ export(callSampleSpecificVariants, SampleSpecificVariantFilters)
 
 export(callWildtype, minCallableCoverage)
 
+## some utilities
+export(matchVariants, mergeVariantInfo)
+
 ## API for next release
 ## export(checkVariantConcordance,
 ##        callableFraction, annotateTrans,
