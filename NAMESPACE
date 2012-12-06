@@ -1,13 +1,18 @@
 import(BiocGenerics)
 import(IRanges)
 import(GenomicRanges)
+importFrom(parallel, mclapply, mcmapply)
 importFrom(Biostrings, DNAStringSet, detail)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
 importFrom(gmapR, bam_tally, BamTallyParam)
 importFrom(VariantAnnotation, VCFHeader, VCF)
+importFrom(graph, graphNEL)
+importFrom(RBGL, connectedComp)
 
 export(callVariants, qaVariants, tallyVariants)
+export(calculateConcordanceMatrix, printConcordanceReport,
+       idVerify, calculateConcordanceReport)
 export(VariantQAFilters, VariantCallingFilters, VariantTallyParam)
 export(variantGR2Vcf)
 
