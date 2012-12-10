@@ -9,7 +9,7 @@ Description: Tools for detecting, filtering, calling,
 Depends: IRanges (>= 1.17.10), GenomicRanges (>= 1.9.52),
          VariantAnnotation (>= 1.3.20), methods
 Imports: IRanges, Rsamtools (>= 1.11.10), GenomicRanges, BiocGenerics, 
-         Biostrings, parallel, gmapR (>= 0.99.28), GenomicFeatures,
+         Biostrings, parallel, gmapR (>= 1.1.8), GenomicFeatures,
          VariantAnnotation, methods, RBGL, graph
 Suggests: RUnit, LungCancerLines (>= 0.0.6)
 biocViews: Genetics, GeneticVariability, HighThroughputSequencing
