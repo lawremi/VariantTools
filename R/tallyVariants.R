@@ -67,7 +67,7 @@ VariantTallyParam <- function(genome,
                variant_strand = variant_strand,
                ignore_query_Ns = ignore_query_Ns,
                minimum_mapq = minimum_mapq,
-               cycle_breaks = cycle_breaks,
+               cycle_breaks = as.integer(cycle_breaks),
                high_base_quality = high_base_quality,
                ...)
   do.call(BamTallyParam, args) 
