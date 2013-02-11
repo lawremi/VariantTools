@@ -24,7 +24,7 @@ safe_mcmapply <- function(FUN, ...) {
 }
 
 batchCondition <- function(x) {
-  errors <- sapply(x, is, "try-error")
+  errors <- vapply(x, is, logical(1), "try-error")
   if (any(errors)) {
     mesg <- paste(sum(errors), "job(s) encountered an error.")
     error_mesg <- unlist(x[errors], use.names = FALSE)
