@@ -5,6 +5,7 @@
 ## May push up to gmapR if it proves more generally useful
 
 flankingCycleBreaks <- function(read_length, width = 10L) {
+  read_length <- as.integer(read_length)
   if (is.na(read_length))
     return(NULL)
   if (read_length < 1)

@@ -24,7 +24,10 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
   f <- freq(params(lr.filter)$p.lower, params(lr.filter)$p.error)
   p <- 1 - pbinom(round(pmax(params(rc.filter)$min.count, size * f)), size,
                   params(lr.filter)$p.lower)
-  head(size[p > power], 1L)
+  cov <- head(size[p > power], 1L)
+  if (length(cov) == 0L)
+    NA_integer_
+  else cov
 }
 
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
