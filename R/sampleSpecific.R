@@ -60,10 +60,11 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
           function(case, control, control.cov,
                    qa.filters = VariantQAFilters(),
                    calling.filters = VariantCallingFilters(),
+                   post.filters = VariantPostFilters(),
                    ...)
           {
             case.called <- callVariants(qaVariants(case, qa.filters),
-                                        calling.filters)
+                                        calling.filters, post.filters)
             
             filters <- SampleSpecificVariantFilters(control,
                                                     control.cov,
@@ -93,12 +94,12 @@ setMethod("callSampleSpecificVariants", c("character", "character"),
 SampleSpecificVariantFilters <-
   function(control, control.cov, calling.filters, power = 0.8, p.value = 0.01)
 {
-  control.called <- callVariants(control, calling.filters)  
+  control.called <- callVariants(control, calling.filters,
+                                 post.filters = FilterRules())
   FilterRules(c(calledInControl = SetdiffVariantsFilter(control.called),
                 power = CallableInOtherFilter(control.cov, calling.filters,
                   power),
                 extremity = LowerFrequencyInOtherFilter(control, control.cov,
-                  params(calling.filters$likelihoodRatio)$use.high.qual,
                   p.value)
                 ))
 }
@@ -146,13 +147,10 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
   }
 }
 
-LowerFrequencyInOtherFilter <- function(other, other.cov, use.high.qual,
-                                        p.value = 0.01)
+LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 {
   function(x) {
-    if (use.high.qual)
-      x.freq <- with(mcols(x), high.quality / high.quality.total)
-    else x.freq <- with(mcols(x), count / count.total)
+    x.freq <- with(mcols(x), high.quality / high.quality.total)
     m <- match(variantKeys(x), variantKeys(other))
     other.alt <- rep.int(0L, length(x))
     other.alt[!is.na(m)] <- other$count[m[!is.na(m)]]

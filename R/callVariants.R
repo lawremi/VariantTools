@@ -12,11 +12,12 @@ setMethod("callVariants", "BamFile",
           function(x, tally.param,
                    qa.filters = VariantQAFilters(),
                    calling.filters = VariantCallingFilters(...),
+                   post.filters = VariantPostFilters(),
                    ...)
           {
             raw_variants <- tallyVariants(x, tally.param)
             qa_variants <- qaVariants(raw_variants, qa.filters)
-            callVariants(qa_variants, calling.filters)
+            callVariants(qa_variants, calling.filters, post.filters)
           })
 
 setMethod("callVariants", "character", function(x, ...) {
@@ -24,40 +25,33 @@ setMethod("callVariants", "character", function(x, ...) {
 })
 
 setMethod("callVariants", "GenomicRanges",
-          function(x, calling.filters = VariantCallingFilters(...), ...)
+          function(x, calling.filters = VariantCallingFilters(...),
+                   post.filters = VariantPostFilters(), ...)
           {
-            subsetByFilter(x, calling.filters)
+            called_variants <- subsetByFilter(x, calling.filters)
+            postFilterVariants(called_variants, post.filters)
           })
 
 VariantCallingFilters <-
-  function(read.count = 2L, p.lower = 0.2,
-           p.error = if (use.high.qual) 1/10000 else 1/100,
-           use.high.qual = TRUE)
+  function(read.count = 2L, p.lower = 0.2, p.error = 1/10000)
 {
   c(VariantSanityFilters(),
-    FilterRules(list(readCount = MinCountFilter(read.count, use.high.qual),
-                     likelihoodRatio =
-                     BinomialLRFilter(p.lower, p.error, use.high.qual))))
+    FilterRules(list(readCount = MinCountFilter(read.count),
+                     likelihoodRatio = BinomialLRFilter(p.lower, p.error))))
 }
 
-MinCountFilter <- function(min.count = 2L, use.high.qual = TRUE) {
+MinCountFilter <- function(min.count = 2L) {
   function(x) {
-    mcols(x)[[if (use.high.qual) "high.quality" else "count"]] >= min.count
+    mcols(x)[["high.quality"]] >= min.count
   }
 }
 
 BinomialLRFilter <-
-  function(p.lower = 0.2,
-           p.error = if (use.high.qual) 1/10000 else 1/100,
-           use.high.qual = TRUE)
+  function(p.lower = 0.2, p.error = 1/10000)
 {
   function(x) {
     freq <- freq(p.error, p.lower)
-    sampleFreq <- if (use.high.qual) {
-      with(values(x), high.quality / (high.quality.total))
-    } else {
-      with(values(x), count / count.total)
-    }
+    sampleFreq <- with(values(x), high.quality / (high.quality.total))
     passed <- sampleFreq >= freq
     passed[is.na(passed)] <- FALSE
     passed

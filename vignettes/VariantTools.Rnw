@@ -151,6 +151,13 @@ the sequencing (default: 0.001).
 called.variants <- callVariants(qa.variants)
 @ 
 
+The \Rfunction{callVariants} function applies an additional set of
+filters after the actual variant calling. These are known as ``post''
+filters and consider the putative variant calls as a set, independent
+of the calling algorithm.  Currently, there is only one post filter by
+default, and it discards variants that are clumped together along the
+chromosome, as these often result from mapping difficulties.
+
 \subsection{Diagnosing the filters}
 \label{sec:filter-diag}
 
@@ -199,8 +206,15 @@ fs.custom <- eval(qa.filters.custom["fisherStrand"], raw.variants)
 raw.variants[fs.original != fs.custom]
 @ 
 
-We can also manipulate the filters that call the variants that have
-already passed the basic QA checks.
+Below, we demonstrate how one might add a mask to e.g. filter out
+variants in low complexity regions, where mapping errors tend to dominate:
+<<VariantQAFilters-mask>>=
+mask <- GRanges("TP53", IRanges(1010000, width=10000))
+qa.variants.masked <- qaVariants(raw.variants, mask = mask)
+@
+
+We can also diagnose the filters for calling variants after basic QA
+checks.
 <<VariantCallingFilters>>=
 calling.filters <- VariantCallingFilters()
 summary(calling.filters, qa.variants)

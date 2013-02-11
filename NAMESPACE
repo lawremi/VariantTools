@@ -9,6 +9,7 @@ importFrom(gmapR, bam_tally, BamTallyParam)
 importFrom(VariantAnnotation, VCFHeader, VCF)
 importFrom(graph, graphNEL)
 importFrom(RBGL, connectedComp)
+importClassesFrom(Matrix, dgTMatrix)
 
 export(callVariants, qaVariants, tallyVariants)
 export(calculateConcordanceMatrix, printConcordanceReport,
