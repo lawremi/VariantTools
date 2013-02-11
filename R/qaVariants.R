@@ -7,7 +7,8 @@ sanitizeVariants <- function(x, ...) {
 }
 
 VariantSanityFilters <- function() {
-  FilterRules(list(nonRef = NonRefFilter(), nonNRef = NonNRefFilter()))
+  FilterRules(list(nonRef = NonRefFilter(), nonNRef = NonNRefFilter(),
+                   indelsNotSupported = IndelsNotSupportedFilter()))
 }
 
 qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
@@ -16,13 +17,14 @@ qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
 }
 
 VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4,
-                             read.pos.p.value = 1e-4)
+                             read.pos.p.value = 1e-4, mask = GRanges())
 {
   c(VariantSanityFilters(),
     FilterRules(c(cycleCount = CycleCountFilter(cycle.count),
                   fisherStrand = FisherStrandFilter(fisher.strand.p.value),
                   cycleBin = InternalCycleBinFilter(),
-                  readPosTTest = ReadPositionTTestFilter(read.pos.p.value))))
+                  readPosTTest = ReadPositionTTestFilter(read.pos.p.value),
+                  mask = MaskFilter(mask))))
 }
 
 ## With new gmapR, this is only necessary for filtering the ref N's.
@@ -92,5 +94,29 @@ ReadPositionTTestFilter <- function(p.value.cutoff = 1e-4) {
     ans <- p > p.value.cutoff
     ans[is.na(ans)] <- TRUE
     ans
+  }
+}
+
+DistanceToNearestFilter <- function(min.dist = 10L) {
+  function(x) {
+    distanceToNearest(x)$distance > min.dist
+  }
+}
+
+NeighborCountFilter <- function(max.count = 2L, window.size = 75L) {
+  function(x) {
+    countOverlaps(resize(x, window.size, fix = "center"), x) <= max.count
+  }
+}
+
+IndelsNotSupportedFilter <- function() {
+  function(x) {
+    nzchar(x$ref) & nzchar(x$alt)
+  }
+}
+
+MaskFilter <- function(mask) {
+  function(x) {
+    !overlapsAny(x, mask, ignore.strand = TRUE)
   }
 }
