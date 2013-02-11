@@ -23,8 +23,7 @@
 \S4method{callVariants}{GenomicRanges}(x,
      calling.filters = VariantCallingFilters(...), 
      ...)
-VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000,
-                      use.high.qual = TRUE)
+VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1e-4)
 }
 
 \arguments{
@@ -44,18 +43,17 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000,
     \code{VariantCallingFilters}, see arguments listed below.
   }
   \code{...}{Arguments for \code{VariantCallingFilters}, listed below.}
-  \item{read.count}{Require at least this many reads with the alternate
-    base. By default, this is a sanity check to prevent calling a
-    variant at a position with a single read.
+  \item{read.count}{
+    Require at least this many high quality reads with
+    the alternate base. The default value is designed to catch sequencing
+    errors where coverage is too low to rely on the LRT. Increasing this
+    value has a significant negative impact on power.
   }
   \item{p.lower}{The lower bound on the binomial probability for a true
     variant.
   }
   \item{p.error}{The binomial probability for a sequencing error (default
-    is reasonable for Illumina data).
-  }
-  \item{use.high.qual}{
-    Whether to use the high quality counts in the likelihood ratio test.
+    is reasonable for Illumina data with the default quality cutoff).
   }
   \item{\dots}{
     Arguments to pass to \code{VariantCallingFilters}.
@@ -63,8 +61,9 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000,
 }
 \value{
   For \code{callVariants}, a \code{GRanges} of the called variants (the
-  tallies that pass the QA and calling filters).
-
+  tallies that pass the QA and calling filters). See the documentation
+  of \code{\link[gmapR]{bam_tally}} for complete details.
+  
   For \code{VariantCallingFilters}, a \code{\link[IRanges]{FilterRules}}
   object with the filters for calling the variants (presumably after the
   QA filters have been applied).
@@ -84,6 +83,6 @@ variants <- callVariants(bams$H1993, tally.param)
 
 ## customize
 qa.filters <- VariantQAFilters(fisher.strand.p.value = 1e-4)
-calling.filters <- VariantCallingFilters(read.count = 3L)
+calling.filters <- VariantCallingFilters(p.error = 1/1000)
 callVariants(bams$H1993, tally.param, qa.filters, calling.filters)
 }
