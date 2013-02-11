@@ -79,7 +79,7 @@ callWildtype <- function(reads, variants, calling.filters, param, global = TRUE,
     seqlevels(variants) <- names(callable)
     var <- as(variants, "RangesList")
   } else {
-    var <- bamWhich(param) %in% variants
+    var <- bamWhich(param) %over% variants
   }
   wildtype[var] <- FALSE
   wildtype

@@ -112,7 +112,7 @@ SetdiffVariantsFilter <- function(other) {
 
 SetdiffPositionsFilter <- function(other) {
   function(x) {
-    !(x %in% other)
+    !(x %over% other)
   }
 }
 
