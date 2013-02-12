@@ -34,7 +34,7 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3,
     below this cutoff are discarded.
   }
   \item{mask}{A \code{GRanges} with regions to exclude from
-    consideration; e.g., simple repeats.
+    consideration; e.g., simple repeats. Strand is not considered.
   }
 }
 \details{
