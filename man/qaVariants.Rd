@@ -11,7 +11,8 @@
 }
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
-VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3)
+VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3,
+                 mask = GRanges())
 }
 
 \arguments{
@@ -31,6 +32,9 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3)
   \item{fisher.strand.p.value}{p-value cutoff for the Fisher's Exact Test for
     strand bias (+/- counts, alt vs. ref). Any variants with p-values
     below this cutoff are discarded.
+  }
+  \item{mask}{A \code{GRanges} with regions to exclude from
+    consideration; e.g., simple repeats.
   }
 }
 \details{
