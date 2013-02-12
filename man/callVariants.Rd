@@ -12,18 +12,20 @@
   Calls variants from either a BAM file or a tally \code{GRanges}
   object. The variants are first filtered with \code{\link{qaVariants}},
   and the remaining candidates are called using a binomial likelihood
-  ratio test: P(D|p=\code{p.lower}) / P(D|p=\code{p.error}) > 1.
+  ratio test. Those calls are then subjected to a post-filtering step.
 }
 \usage{
 \S4method{callVariants}{BamFile}(x, tally.param,
                                  qa.filters = VariantQAFilters(),
                                  calling.filters = VariantCallingFilters(...),
+                                 post.filters = VariantPostFilters(),
                                  ...)
 \S4method{callVariants}{character}(x, ...)
 \S4method{callVariants}{GenomicRanges}(x,
      calling.filters = VariantCallingFilters(...), 
      ...)
 VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1e-4)
+VariantPostFilters(max.nbor.count = 0.1)
 }
 
 \arguments{
@@ -42,6 +44,11 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1e-4)
     Filters used in the calling step, typically constructed with
     \code{VariantCallingFilters}, see arguments listed below.
   }
+  \item{post.filters}{
+    Filters that are applied after the initial calling step. These
+    consider the set of variant calls as a whole and remove those with
+    suspicious patterns.
+  }
   \code{...}{Arguments for \code{VariantCallingFilters}, listed below.}
   \item{read.count}{
     Require at least this many high quality reads with
@@ -55,9 +62,26 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1e-4)
   \item{p.error}{The binomial probability for a sequencing error (default
     is reasonable for Illumina data with the default quality cutoff).
   }
+  \item{max.nbor.count}{The maximum allowed neighbor count, which is a
+    count of the neighbors within 100bp, weighted by the inverse of the
+    square root of the distance to the neighbor.
+  }
   \item{\dots}{
     Arguments to pass to \code{VariantCallingFilters}.
   }
+}
+\details{
+  After QA filtering, there are two remaining steps for calling
+  variants: the actual statistical test that decides whether a variant
+  exists in the data, and a post-filtering step. By default, the initial
+  calling is based on a binomial likelihood ratio test
+  (P(D|p=\code{p.lower}) / P(D|p=\code{p.error}) > 1). The test amounts
+  to excluding putative variants with less than ~4\% alt frequency. A
+  variant is also required to be represented by at least 2 alt
+  reads. The post-filtering stage considers the set of variant calls as
+  a whole and removes variants with suspicious patterns. Currently,
+  there is a single post-filter that removes variants that are clumped
+  together on the chromosome (see the \code{max.nbor.count} parameter).
 }
 \value{
   For \code{callVariants}, a \code{GRanges} of the called variants (the
