@@ -4,7 +4,9 @@
 \documentclass[10pt]{article}
 
 \usepackage{times}
-\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[colorlinks=true, linkcolor=Blue, urlcolor=Blue,
+  citecolor=Blue]{hyperref}
 
 \textwidth=6.5in
 \textheight=8.5in
