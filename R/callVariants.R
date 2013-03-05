@@ -33,7 +33,7 @@ setMethod("callVariants", "GenomicRanges",
           })
 
 VariantCallingFilters <-
-  function(read.count = 2L, p.lower = 0.2, p.error = 1/10000)
+  function(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 {
   c(VariantSanityFilters(),
     FilterRules(list(readCount = MinCountFilter(read.count),
@@ -47,18 +47,18 @@ MinCountFilter <- function(min.count = 2L) {
 }
 
 BinomialLRFilter <-
-  function(p.lower = 0.2, p.error = 1/10000)
+  function(p.lower = 0.2, p.error = 1/1000)
 {
   function(x) {
-    freq <- freq(p.error, p.lower)
-    sampleFreq <- with(values(x), high.quality / (high.quality.total))
-    passed <- sampleFreq >= freq
+    freq.cutoff <- lrtFreqCutoff(p.error, p.lower)
+    sample.freq <- with(values(x), high.quality / (high.quality.total))
+    passed <- sample.freq >= freq.cutoff
     passed[is.na(passed)] <- FALSE
     passed
   }
 }
 
-freq <- function(p0, p1, n = if (C == 1L) 1L else n, C = 1L) {
+lrtFreqCutoff <- function(p0, p1, n = if (C == 1L) 1L else n, C = 1L) {
   num <- (1/n) * log(C) + log(1-p0) - log(1-p1)
   denom <- log(p1) - log(p0) + log(1-p0) - log(1-p1)
   num/denom

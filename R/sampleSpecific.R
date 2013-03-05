@@ -141,7 +141,7 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
     stop("'readCount' filter not found in 'calling.filters'")
   function(x) {
     other.n <- extractCoverageForPositions(other.cov, x)
-    f <- freq(lr.params$p.error, lr.params$p.lower)
+    f <- lrtFreqCutoff(lr.params$p.error, lr.params$p.lower)
     min.count <- round(pmax(params(rc.filter)$min.count, other.n * f))
     1 - pbinom(min.count, other.n, lr.params$p.lower) > power
   }

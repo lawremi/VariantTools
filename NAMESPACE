@@ -10,6 +10,8 @@ importFrom(VariantAnnotation, VCFHeader, VCF)
 importFrom(graph, graphNEL)
 importFrom(RBGL, connectedComp)
 importClassesFrom(Matrix, dgTMatrix)
+importFrom(rtracklayer, import)
+importClassesFrom(rtracklayer, BigWigFile)
 
 export(callVariants, qaVariants, tallyVariants)
 export(calculateConcordanceMatrix, printConcordanceReport,

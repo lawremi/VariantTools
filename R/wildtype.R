@@ -21,7 +21,7 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
   if (is.null(rc.filter))
     stop("'readCount' filter not found in 'calling.filters'")
   size <- seq(1L, max.coverage)
-  f <- freq(params(lr.filter)$p.lower, params(lr.filter)$p.error)
+  f <- lrtFreqCutoff(params(lr.filter)$p.lower, params(lr.filter)$p.error)
   p <- 1 - pbinom(round(pmax(params(rc.filter)$min.count, size * f)), size,
                   params(lr.filter)$p.lower)
   cov <- head(size[p > power], 1L)
@@ -32,54 +32,46 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
 
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
 
-setMethod("callCallable", "RleList", function(x, param, global = TRUE, ...) {
-  if (!is(param, "BamTallyParam"))
-    stop("'param' must be a BamTallyParam")
+setMethod("callCallable", "BigWigFile", function(x, pos = NULL, ...) {
+  rd <- import(x, which = pos, asRangedData = FALSE)
+  callCallable(coverage(rd, weight = "score"), pos = pos, ...)
+})
+
+setMethod("callCallable", "RleList", function(x, pos = NULL, ...) {
+  if (!is.null(pos)) {
+    if (!is(pos, "GenomicRanges"))
+      stop("'pos' must be NULL or a GenomicRanges")
+    pos.all.width.one <- all(width(pos) == 1L)
+    if (!pos.all.width.one)
+      stop("All 'pos' ranges must be of length one")
+  }
   cutoff <- minCallableCoverage(...)
-  which.rl <- bamWhich(param)
-  if (length(which.rl) > 0L) {
-    if (global) {
-      if (length(setdiff(seqlevels(which.rl), names(x))) > 0L)
-        stop("Some seqlevels are missing from coverage")
-      common.seqnames <- intersect(names(which.rl), names(x))
-      x.in.which <- x[common.seqnames]
-      callable <- seqapply(elementLengths(x.in.which), Rle, values = NA)
-      callable[which.rl] <- x.in.which[which.rl] >= cutoff
-      callable
-    } else {
-      cov <- extractCoverageForPositions(x, as(which.rl, "GRanges"))
-      cov >= cutoff
-    }
+  if (!is.null(pos)) {
+    cov <- extractCoverageForPositions(x, pos)
+    cov >= cutoff
   } else {
     x >= cutoff
   }
 })
 
-setMethod("callCallable", "ANY", function(x, param, ...) {
-  scan.param <- ScanBamParam(which = bamWhich(param))
-  cov <- coverage(x, drop.D.ranges = TRUE, param = scan.param)
-  callCallable(cov, param, ...)
+setMethod("callCallable", "ANY", function(x, ...) {
+  cov <- coverage(x, drop.D.ranges = TRUE)
+  callCallable(cov, ...)
 })
 
-callWildtype <- function(reads, variants, calling.filters, param, global = TRUE,
+callWildtype <- function(reads, variants, calling.filters, pos = NULL,
                          ...)
 {
-  if (!isTRUEorFALSE(global))
-    stop("'global' must be TRUE or FALSE")
-  which.all.width.one <-
-    all(width(unlist(bamWhich(param), use.names = FALSE)) == 1L)
-  if (!global && !which.all.width.one)
-    stop("All 'bamWhich' ranges must be of length one for 'global = FALSE'")
   callable <- callCallable(reads, calling.filters = calling.filters,
-                           param = param, global = global, ...)
+                           pos = pos, ...)
   wildtype <- callable
   callable[is.na(callable)] <- FALSE
   wildtype[!callable] <- NA
-  if (global) {
+  if (is.null(pos)) {
     seqlevels(variants) <- names(callable)
     var <- as(variants, "RangesList")
   } else {
-    var <- bamWhich(param) %over% variants
+    var <- pos %over% variants
   }
   wildtype[var] <- FALSE
   wildtype

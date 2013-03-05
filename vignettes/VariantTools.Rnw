@@ -305,10 +305,15 @@ returned by \Rfunction{VariantCallingFilters}. The algorithm depends
 on the filter parameter settings, so it is possible and indeed
 required for the user to pass filter object used for calling the
 variants. This requirement is an attempt to ensure consistency and
-will be made more convenient in the future.
+will be made more convenient in the future. To request the calls for a
+particular set of positions, one can pass a \Rclass{GenomicRanges}
+(where all the ranges are of width 1) as the \Rfunarg{pos}
+argument. When \Rfunarg{pos} is specfied, each element of the result
+corresponds to an element in \Rfunarg{pos}.
 <<callWildtype>>=
+pos <- c(called.variants, shift(called.variants, 3))
 wildtype <- callWildtype(bam, called.variants, VariantCallingFilters(), 
-                         tally.param, power = 0.85)
+                         pos = pos, power = 0.85)
 @
 %
 The returned object is a logical \Rclass{RleList} object, with
