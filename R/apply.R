@@ -76,5 +76,5 @@ applyByChromosome <- function(X, FUN, ...) {
   ind <- seq_len(length(gr))
   safe_mclapply(ind, function(i, ...) {
     FUN(gr[i], ...)
-  }, mc.preschedule = FALSE, ...)
+  }, ...)
 }
