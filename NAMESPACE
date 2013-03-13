@@ -16,7 +16,8 @@ importClassesFrom(rtracklayer, BigWigFile)
 export(callVariants, qaVariants, tallyVariants)
 export(calculateConcordanceMatrix, printConcordanceReport,
        idVerify, calculateConcordanceReport)
-export(VariantQAFilters, VariantCallingFilters, VariantTallyParam)
+export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
+       VariantPostFilters)
 export(variantGR2Vcf)
 
 export(callSampleSpecificVariants, SampleSpecificVariantFilters)
