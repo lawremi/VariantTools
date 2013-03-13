@@ -222,6 +222,18 @@ calling.filters <- VariantCallingFilters()
 summary(calling.filters, qa.variants)
 @ 
 
+Check how the post filter would perform prior to variant calling:
+<<post-filter>>=
+post.filters <- VariantPostFilters()
+summary(post.filters, qa.variants)
+@ 
+%
+What about if we preserved the ones we have already called?
+<<post-filter-whitelist>>=
+post.filters <- VariantPostFilters(whitelist = called.variants)
+summary(post.filters, qa.variants)
+@ 
+
 \subsection{Extending and customizing the workflow}
 \label{sec:extending}
 
