@@ -6,8 +6,9 @@ postFilterVariants <- function(x, post.filters = VariantPostFilters(...), ...) {
   subsetByFilter(x, post.filters)
 }
 
-VariantPostFilters <- function(max.nbor.count = 0.1) {
-  FilterRules(list(avgNborCount = AverageNeighborCountFilter(max.nbor.count)))
+VariantPostFilters <- function(max.nbor.count = 0.1, whitelist = NULL) {
+  FilterRules(list(avgNborCount = AverageNeighborCountFilter(max.nbor.count,
+                     whitelist = whitelist)))
 }
 
 twoWayTabulate <- function(x, y, x.nbins, y.nbins) {
@@ -32,10 +33,20 @@ findAverageNeighborCount <- function(x, max.dist = 50L,
 }
 
 AverageNeighborCountFilter <- function(max.nbor.count = 0.1, max.dist = 50L,
-                                       weighter = function(d) 1/sqrt(d))
+                                       weighter = function(d) 1/sqrt(d),
+                                       whitelist = NULL)
 {
   function(x) {
-    count <- findAverageNeighborCount(x, max.dist, weighter)
-    count <= max.nbor.count
+    if (!is.null(whitelist)) {
+      white.listed <- !MaskFilter(whitelist)(x)
+      filtered.x <- x[!white.listed]
+    } else filtered.x <- x
+    count <- findAverageNeighborCount(filtered.x, max.dist, weighter)
+    ans <- count <= max.nbor.count
+    if (!is.null(whitelist)) {
+      ans.padded <- rep.int(TRUE, length(x))
+      ans.padded[!white.listed] <- ans
+      ans.padded
+    } else ans
   }
 }
