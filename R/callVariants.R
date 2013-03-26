@@ -15,6 +15,8 @@ setMethod("callVariants", "BamFile",
                    post.filters = VariantPostFilters(),
                    ...)
           {
+            non.redundant <- setdiff(names(calling.filters), names(qa.filters))
+            calling.filters <- calling.filters[non.redundant]
             raw_variants <- tallyVariants(x, tally.param)
             qa_variants <- qaVariants(raw_variants, qa.filters)
             callVariants(qa_variants, calling.filters, post.filters)
@@ -40,9 +42,17 @@ VariantCallingFilters <-
                      likelihoodRatio = BinomialLRFilter(p.lower, p.error))))
 }
 
+altCount <- function(x) {
+  ifelse(is.na(x$high.quality), x$count, x$high.quality)
+}
+refCount <- function(x) {
+  ifelse(is.na(x$high.quality.ref), x$count.ref, x$high.quality.ref)
+}
+
+
 MinCountFilter <- function(min.count = 2L) {
   function(x) {
-    mcols(x)[["high.quality"]] >= min.count
+    altCount(x) >= min.count
   }
 }
 
@@ -51,7 +61,7 @@ BinomialLRFilter <-
 {
   function(x) {
     freq.cutoff <- lrtFreqCutoff(p.error, p.lower)
-    sample.freq <- with(values(x), high.quality / (high.quality.total))
+    sample.freq <- altCount(x) / refCount(x)
     passed <- sample.freq >= freq.cutoff
     passed[is.na(passed)] <- FALSE
     passed
