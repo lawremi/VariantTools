@@ -1,13 +1,13 @@
 
-checkVariantConcordance <- function(gr1, gr2, SNP_gr = NULL) {
+calculateVariantConcordance <- function(gr1, gr2, which = NULL) {
   filters <- VariantConcordanceFilters()
   
   gr1 <- subsetByFilter(gr1, filters)
   gr2 <- subsetByFilter(gr2, filters)
   
-  if(!is.null(SNP_gr)){
-    gr1 <- subsetByOverlaps(gr1, SNP_gr)
-    gr2 <- subsetByOverlaps(gr2, SNP_gr)
+  if(!is.null(which)){
+    gr1 <- subsetByOverlaps(gr1, which)
+    gr2 <- subsetByOverlaps(gr2, which)
   }
   
   overlaps <- findOverlaps(gr1, gr2)

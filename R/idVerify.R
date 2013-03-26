@@ -31,7 +31,7 @@ calculateConcordanceMatrix <- function(variantFiles) {
       }
     
       ## compute variant concordance
-      vc <- try(checkVariantConcordance(avar, bvar))
+      vc <- try(calculateVariantConcordance(avar, bvar))
       if (class(vc) == "try-error") {
         stop("error: variantConcordance() didn't return a value")
       }
@@ -52,13 +52,8 @@ calculateConcordanceMatrix <- function(variantFiles) {
   return(vcmat)  
 }
 
-printConcordanceReport <- function(concordanceReport) {
-  msg <- paste(names(concordanceReport), concordanceReport, sep="\t")
-  cat(paste(msg, collapse="\n"))
-}
-
-calculateConcordanceReport <- function(concordanceMatrix,
-                                       threshold) {
+callVariantConcordance <- function(concordanceMatrix,
+                                   threshold) {
   concordantCliques <- .getConcordantCliques(concordanceMatrix,
                                              threshold)
   ## test if connected components are cliques of
@@ -80,14 +75,6 @@ calculateConcordanceReport <- function(concordanceMatrix,
     vstate[multinodeCliqueElements] <- "concordant"
   }
   return(vstate)
-}
-
-idVerify <- function(variantFiles, threshold)
-{
-  concordanceMatrix <- calculateConcordanceMatrix(variantFiles)
-  concordanceReport <- calculateConcordanceReport(concordanceMatrix,
-                                                  threshold)
-  printConcordanceReport(concordanceReport)
 }
 
 ##################
