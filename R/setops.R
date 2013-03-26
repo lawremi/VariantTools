@@ -1,8 +1,8 @@
 variantKeys <- function(x) paste0(x$location, x$alt)
 
-matchVariants <- function(x, y) {
-  hits <- findOverlaps(x, y)
-  same.alt <- x$alt[queryHits(hits)] == y$alt[subjectHits(hits)]
+matchVariants <- function(x, table) {
+  hits <- findOverlaps(x, table)
+  same.alt <- x$alt[queryHits(hits)] == table$alt[subjectHits(hits)]
   ans <- rep(NA, length(x))
   ans[queryHits(hits)[same.alt]] <- subjectHits(hits)[same.alt]
   ans
