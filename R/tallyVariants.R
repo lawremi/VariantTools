@@ -57,6 +57,7 @@ VariantTallyParam <- function(genome,
                               high_base_quality = 0L,
                               minimum_mapq = 13L, 
                               variant_strand = 1L, ignore_query_Ns = TRUE,
+                              ignore_duplicates = TRUE,
                               ...)
 {
   if (variant_strand < 1 || variant_strand > 2)
@@ -69,6 +70,7 @@ VariantTallyParam <- function(genome,
                minimum_mapq = minimum_mapq,
                cycle_breaks = as.integer(cycle_breaks),
                high_base_quality = high_base_quality,
+               ignore_duplicates = ignore_duplicates,
                ...)
   do.call(BamTallyParam, args) 
 }
