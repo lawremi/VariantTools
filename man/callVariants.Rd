@@ -22,10 +22,10 @@
                                  ...)
 \S4method{callVariants}{character}(x, ...)
 \S4method{callVariants}{GenomicRanges}(x,
-     calling.filters = VariantCallingFilters(...), 
+     calling.filters = VariantCallingFilters(...),
+     post.filters = VariantPostFilters(),
      ...)
-VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1e-4)
-VariantPostFilters(max.nbor.count = 0.1)
+VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 }
 
 \arguments{
@@ -61,10 +61,6 @@ VariantPostFilters(max.nbor.count = 0.1)
   }
   \item{p.error}{The binomial probability for a sequencing error (default
     is reasonable for Illumina data with the default quality cutoff).
-  }
-  \item{max.nbor.count}{The maximum allowed neighbor count, which is a
-    count of the neighbors within 100bp, weighted by the inverse of the
-    square root of the distance to the neighbor.
   }
   \item{\dots}{
     Arguments to pass to \code{VariantCallingFilters}.

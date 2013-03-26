@@ -11,8 +11,8 @@
 }
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
-VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3,
-                 mask = GRanges())
+VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-4,
+                 read.pos.p.value = 1e-4, mask = GRanges())
 }
 
 \arguments{
@@ -33,6 +33,10 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3,
     strand bias (+/- counts, alt vs. ref). Any variants with p-values
     below this cutoff are discarded.
   }
+  \item{read.pos.p.value}{
+    p-value cutoff for the read position t-test
+    between the variant and reference calls
+  }
   \item{mask}{A \code{GRanges} with regions to exclude from
     consideration; e.g., simple repeats. Strand is not considered.
   }
@@ -49,6 +53,13 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-3,
     \item{If the tallies contain cycle bin counts, the variant must have
       at least one count in the middle bins
       (those not at the start or end). We trust the internal cycles more.
+    }
+    \item{Read position t-test comparing the mean read position for the
+      reference and alt reads. Any imbalance probably indicates mapping
+      issues. 
+    }
+    \item{Mask of blacklisted positions, such as simple repeats, low
+      complexity regions, i.e., uninteresting, problematic regions.
     }
   }
   

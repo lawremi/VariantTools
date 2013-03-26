@@ -18,7 +18,8 @@
 \S4method{callSampleSpecificVariants}{character,character}(case, control, ...)
 \S4method{callSampleSpecificVariants}{GenomicRanges,GenomicRanges}(case,
   control, control.cov, qa.filters = VariantQAFilters(),
-  calling.filters = VariantCallingFilters(), ...)
+  calling.filters = VariantCallingFilters(), post.filters =
+  VariantPostFilters(), ...)
 SampleSpecificVariantFilters(control, control.cov, calling.filters,
                              power = 0.8, p.value = 0.01)
 }
@@ -39,6 +40,12 @@ SampleSpecificVariantFilters(control, control.cov, calling.filters,
   \item{calling.filters}{Filters to use for the initial,
     single-sample calling against reference, typically constructed by
     \code{\link{VariantCallingFilters}}.
+  }
+  \item{post.filters}{
+    Filters that are applied after the initial calling step. These
+    consider the set of variant calls as a whole and remove those with
+    suspicious patterns. They are only applied to the \code{case}
+    sample; only QA filters are applied to \code{control}.
   }
   \item{\dots}{
     For a BAM file, arguments to pass down to the \code{GenomicRanges}

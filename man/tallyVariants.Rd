@@ -27,6 +27,7 @@ VariantTallyParam(genome, readlen = NA,
                   high_base_quality = 0L,
                   minimum_mapq = 13L,
                   variant_strand = 1L, ignore_query_Ns = TRUE,
+                  ignore_duplicates = TRUE,
                   ...)
 }
 \arguments{
@@ -80,6 +81,8 @@ VariantTallyParam(genome, readlen = NA,
     it is \code{FALSE}, beware of low quality datasets returning
     enormous results.
   }
+  \item{ignore_duplicates}{whether to ignore reads flagged as
+    PCR/optical duplicates}
   \item{mc.cores}{The number of cores to use when parallelizing over the
     chromosomes.
   }
