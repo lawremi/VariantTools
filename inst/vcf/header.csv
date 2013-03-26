@@ -1,7 +1,5 @@
 Number,Type,Description
 GT,1,String,Genotype
-AR,A,Integer,ALT read counts
-RR,1,Integer,REF read count
+AD,A,Integer,Read depth for REF and ALT
 DP,1,Integer,Total read count
-AAP,A,Integer,Flags indicating which ALTs are present
-RAP,1,Integer,Flag indicating if REF is present
+AP,A,Integer,Flags indicating whether REF and/or ALT is present

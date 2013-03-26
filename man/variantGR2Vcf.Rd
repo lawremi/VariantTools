@@ -55,13 +55,11 @@ variantGR2Vcf(x, sample.id, project = NULL)
     }
     \item{The \code{geno} list has six matrix elements, all with a
       single column. The first is the mandatory \dQuote{GT} element, the
-      genotype, which we set to \code{NA}. Then there is \dQuote{AR}
-      (list matrix with the read count for each ALT), \dQuote{RR}
-      (integer matrix with the reference read count), \dQuote{DP}
-      (integer matrix with the total read count), \dQuote{AAP} (list
-      matrix of 0/1 flags for whether each ALT was present in the data),
-      and \dQuote{RAP} (integer matrix of 0/1 flags for whether the REF
-      was present).
+      genotype, which we set to \code{NA}. Then there is \dQuote{AD}
+      (list matrix with the read count for each REF and ALT),
+      \dQuote{DP} (integer matrix with the total read count), and
+      \dQuote{AP} (list matrix of 0/1 flags for whether whether REF
+      and/or ALT was present in the data).
     }
   }
 }

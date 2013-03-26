@@ -1,21 +1,14 @@
 ## Convert Genentech Variant GRanges into a VCF 
 
-## How we will populate a VCF object:
-
-## rowData: just the ranges
-## colData: N/A
-## exptData: 'header' element of class VCFHeader, with 'header' slot
-##           being a DataFrameList, with a FORMAT element, where rownames => ID,
-##           and the other columns are Number, Type and Description.
-## fixed: REF and ALT
-## info: N/A
-## geno: list of single-column matrices for AR, RR, DP, AAP, RAP
-
-variantGR2Vcf <- function(x, sample.id, project = NULL) {
-  location <- factor(x$location, unique(x$location))
-  locationRle <- Rle(location)
+variantGR2Vcf <- function(x, sample.id, project = NULL,
+                          genome = GenomicRanges::genome(x))
+{
+  if (missing(sample.id) || !isSingleString(sample.id))
+    stop("'sample.id' must be provided as a single, non-NA string")
+  if (!is.null(project) && !isSingleString(project))
+    stop("'project', if provided, must be a single, non-NA string")
   
-  rowData <- x[start(locationRle)]
+  rowData <- x
   mcols(rowData) <- NULL
 
   colData <- DataFrame(Samples = 1L, row.names = sample.id)
@@ -32,22 +25,47 @@ variantGR2Vcf <- function(x, sample.id, project = NULL) {
                         FORMAT = as(format_header, "DataFrame")))
   exptData <- SimpleList(header = header)
 
-  fixed <- DataFrame(REF = DNAStringSet(x$ref[start(locationRle)]),
-                     ALT = split(DNAStringSet(x$alt), location),
+  x <- normalizeIndelAlleles(x, genome)
+  
+  fixed <- DataFrame(REF = DNAStringSet(x$ref),
+                     ALT = as(x$alt, "List"),
                      QUAL = rep.int(NA_real_, length(rowData)),
                      FILTER = rep.int(NA_character_, length(rowData)))
 
   genoMatrix <- function(v) {
     matrix(v, nrow = nrow(fixed), 1)
   }
-  
+
+  posFactor <- rep(seq_len(length(x)), 2)
+  alleleDepth <- c(x$count.ref, x$count)
+  allelePresent <- as.integer(c(x$count.ref > 0, x$count > 0L))
+
   geno <-
-    SimpleList(AR= genoMatrix(split(x$count, location)),
-               RR= genoMatrix(x$count.ref[start(locationRle)]),
-               DP= genoMatrix(x$count.total[start(locationRle)]),
-               AAP=genoMatrix(split(as.integer(x$count > 0L), location)),
-               RAP=genoMatrix(as.integer(x$count.ref[start(locationRle)] > 0L)))
+    SimpleList(AD = genoMatrix(split(alleleDepth, posFactor)),
+               DP = genoMatrix(x$count.total),
+               AP = genoMatrix(split(as.integer(allelePresent), posFactor)))
 
   VCF(rowData = rowData, colData = colData, exptData = exptData, fixed = fixed,
       geno = geno)
+}
+
+normArgGenome <- function(x) {
+  if (isSingleString(x))
+    x <- GmapGenome(x)
+  else if (!is(x, "GmapGenome"))
+    stop("'genome' must be either a 'GmapGenome' object or ",
+         "a single string identifying one")
+  x
+}
+
+normalizeIndelAlleles <- function(x, genome = GenomicRanges::genome(x)) {
+  genome <- normArgGenome(genome)
+  is.indel <- nchar(x$ref) == 0L | nchar(x$alt) == 0L
+  indels <- x[is.indel]
+  indels <- shift(indels, -1)
+  anchor <- getSeq(genome, indels)
+  indels$ref <- paste0(anchor, indels$ref)
+  indels$alt <- paste0(anchor, indels$alt)
+  x[is.indel] <- indels
+  x
 }
