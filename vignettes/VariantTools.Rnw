@@ -71,7 +71,8 @@ bam <- bams$H1993
 tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
                                  readlen = 100L,
                                  high_base_quality = 23L,
-                                 which = range(p53))
+                                 which = range(p53),
+                                 indels = TRUE)
 called.variants <- callVariants(bam, tally.param)
 @ %$
 %
