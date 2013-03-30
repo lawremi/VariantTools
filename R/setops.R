@@ -15,11 +15,11 @@ mergeVariantInfo <- function(x, info) {
   x
 }
 
-setGeneric("%variant_in%", function(x, y) standardGeneric("%variant_in%"))
+setGeneric("%variant_in%", function(x, table) standardGeneric("%variant_in%"))
 
 setMethod("%variant_in%", c("GenomicRanges", "GenomicRanges"),
-          function(x, y) {
-            !is.na(matchVariants(x, y))
+          function(x, table) {
+            !is.na(matchVariants(x, table))
           })
 
 variant_setdiff <- function(x, y) {
