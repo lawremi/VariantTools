@@ -59,13 +59,15 @@ normArgGenome <- function(x) {
 }
 
 normalizeIndelAlleles <- function(x, genome = GenomicRanges::genome(x)) {
-  genome <- normArgGenome(genome)
   is.indel <- nchar(x$ref) == 0L | nchar(x$alt) == 0L
-  indels <- x[is.indel]
-  indels <- shift(indels, -1)
-  anchor <- getSeq(genome, indels)
-  indels$ref <- paste0(anchor, indels$ref)
-  indels$alt <- paste0(anchor, indels$alt)
-  x[is.indel] <- indels
+  if (any(is.indel)) {
+    genome <- normArgGenome(genome)
+    indels <- x[is.indel]
+    indels <- shift(indels, -1)
+    anchor <- getSeq(genome, indels)
+    indels$ref <- paste0(anchor, indels$ref)
+    indels$alt <- paste0(anchor, indels$alt)
+    x[is.indel] <- indels
+  }
   x
 }
