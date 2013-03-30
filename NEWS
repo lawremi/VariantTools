@@ -1,4 +1,45 @@
-CHANGES IN VERSION 1.00
+CHANGES IN VERSION 1.2.0
+-----------------------
+
+NEW FEATURES
+
+    o Tally, call and export indels (using same algorithm as for SNVs).
+    
+    o Add post-filter that discards variants that are clumped
+      together on the chromosome (likely mapping errors).
+
+    o Add filter for masking regions like simple / low complexity repeats.
+
+    o Add a filter that performs a t-test on the alt vs. ref read positions.
+      
+    o Add callWidtype() function for determining whether a position is
+      variant, wildtype or uncallable, assuming the built-in variant
+      calling filters. This is based on a power calculation that
+      considers the coverage.
+
+    o Some functions for estimating concordance between samples have
+      been added; these were developed for sample ID verification and
+      should be considered experimental.
+    
+    o matchVariants() utility for matching variants by pos and alt.
+
+USER-VISIBLE CHANGES
+
+    o The VCF output is now always in expanded form (one alt per row).
+      The AD (allele depth) geno tag contains the REF and ALT counts,
+      while AP (allele present) indicates presence of the REF and/or
+      ALT allele. Besides the DP tag, all other tags were
+      removed. These changes bring VariantTools more in line with
+      GATK.
+
+    o Control alt and total counts are returned from callSampleSpecificVariants.
+                  
+BUG FIXES
+
+    o The power cutoff in the sample-specific algorithm was not
+      considering the minimum alt read count filter.
+
+CHANGES IN VERSION 1.0.0
 -----------------------
 
 Initial release
