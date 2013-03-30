@@ -10,7 +10,7 @@
   specific for calling variants, not genotypes; see below.
 }
 \usage{
-variantGR2Vcf(x, sample.id, project = NULL)
+variantGR2Vcf(x, sample.id, project = NULL, genome = GenomicRanges::genome(x))
 }
 \arguments{
   \item{x}{
@@ -21,6 +21,11 @@ variantGR2Vcf(x, sample.id, project = NULL)
   }
   \item{project}{
     Description of the project/experiment; will be included in the VCF header.
+  }
+  \item{genome}{
+    \code{GmapGenome} object, or the name of one (in the default genome
+    directory). This is used for obtaining the anchor base when
+    outputting indels.
   }
 }
 \details{

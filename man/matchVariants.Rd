@@ -1,6 +1,7 @@
 \name{matchVariants}
 \alias{matchVariants}
 \alias{\%variant_in\%}
+\alias{\%variant_in\%,GenomicRanges,GenomicRanges-method}
 \title{
   Match variants by position and allele
 }

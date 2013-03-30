@@ -63,7 +63,7 @@ tally.param <- VariantTallyParam(gmapR::TP53Genome(),
                                  high_base_quality = 23L,
                                  which = range(p53))
 # disable post-filtering during variant calling
-called.variants <- callVariants(bam, tally.param,
+called.variants <- callVariants(bams[[1]], tally.param,
                                 post.filters = FilterRules())
 # and apply at a later time...
 postFilterVariants(called.variants, max.nbor.count = 0.15)
