@@ -13,7 +13,7 @@ importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
 
-export(callVariants, qaVariants, tallyVariants)
+export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,
        callVariantConcordance, calculateVariantConcordance)
 export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
