@@ -28,7 +28,7 @@ variantGR2Vcf <- function(x, sample.id, project = NULL,
   x <- normalizeIndelAlleles(x, genome)
   
   fixed <- DataFrame(REF = DNAStringSet(x$ref),
-                     ALT = as(x$alt, "List"),
+                     ALT = as(as.character(x$alt), "List"),
                      QUAL = rep.int(NA_real_, length(rowData)),
                      FILTER = rep.int(NA_character_, length(rowData)))
 
