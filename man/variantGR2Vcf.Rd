@@ -10,7 +10,8 @@
   specific for calling variants, not genotypes; see below.
 }
 \usage{
-variantGR2Vcf(x, sample.id, project = NULL, genome = GenomicRanges::genome(x))
+variantGR2Vcf(x, sample.id, project = NULL,
+              genome = unique(GenomicRanges::genome(x)))
 }
 \arguments{
   \item{x}{

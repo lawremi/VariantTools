@@ -1,7 +1,7 @@
 ## Convert Genentech Variant GRanges into a VCF 
 
 variantGR2Vcf <- function(x, sample.id, project = NULL,
-                          genome = GenomicRanges::genome(x))
+                          genome = unique(GenomicRanges::genome(x)))
 {
   if (missing(sample.id) || !isSingleString(sample.id))
     stop("'sample.id' must be provided as a single, non-NA string")
@@ -58,7 +58,7 @@ normArgGenome <- function(x) {
   x
 }
 
-normalizeIndelAlleles <- function(x, genome = GenomicRanges::genome(x)) {
+normalizeIndelAlleles <- function(x, genome = unique(GenomicRanges::genome(x))) {
   is.indel <- nchar(x$ref) == 0L | nchar(x$alt) == 0L
   if (any(is.indel)) {
     genome <- normArgGenome(genome)
