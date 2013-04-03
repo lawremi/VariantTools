@@ -11,7 +11,7 @@
 }
 \usage{
 calculateVariantConcordance(gr1, gr2, which = NULL)
-calculateConcordanceMatrix(variantFiles)
+calculateConcordanceMatrix(variantFiles, ...)
 callVariantConcordance(concordanceMatrix, threshold)
 }
 \arguments{
@@ -20,7 +20,10 @@ callVariantConcordance(concordanceMatrix, threshold)
     A \code{GRanges} of positions to which the comparison is limited.
   }
   \item{variantFiles}{
-    Character vector of paths to serialized tally \code{GRanges}.
+    Character vector of paths to files representing tally
+    \code{GRanges}. Currently supports serialized (rda) and VCF files.
+    If the file extension is not \dQuote{vcf}, we assume rda. Will be
+    improved in the future.
   }
   \item{concordanceMatrix}{
     A matrix of concordance fractions between sample pairs, as returend by
@@ -30,6 +33,7 @@ callVariantConcordance(concordanceMatrix, threshold)
     The concordance fraction above which edges are generated between
     samples when forming the graph.
   }
+  \item{\dots}{Arguments to pass to the loading function, e.g., \code{readVcf}.}
 }
 \details{
   The \code{calculateVariantConcordance} calculates the fraction of

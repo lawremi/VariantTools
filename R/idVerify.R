@@ -1,4 +1,11 @@
-calculateConcordanceMatrix <- function(variantFiles) {  
+## TODO: use dispatch on special file classes
+loadVariants <- function(x, ...) {
+  if (file_ext(x) == "vcf")
+    readVcf(x, ...)
+  else get(load(x))
+}
+
+calculateConcordanceMatrix <- function(variantFiles, ...) {  
   if (length(variantFiles) < 2L) {
     stop("There must at least two variant files.")
   }
@@ -14,7 +21,7 @@ calculateConcordanceMatrix <- function(variantFiles) {
   ## compute vcmat
   for (i in 1:(n - 1)) {
     avar <- try({
-      get(load(variantFiles[i]))
+      loadVariants(variantFiles[i], ...)
     }, silent=TRUE)
     if (class(avar) == "try-error") {
       stop("error: cannot load filtered_variants_granges in ",
@@ -23,7 +30,7 @@ calculateConcordanceMatrix <- function(variantFiles) {
   
     for (j in (i+1):n) {
       bvar <- try({
-        get(load(variantFiles[j]))
+        loadVariants(variantFiles[j], ...)
       }, silent=TRUE)
       if (class(bvar) == "try-error") {
         stop("error: cannot load filtered_variants_granges in ",
