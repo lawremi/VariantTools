@@ -15,7 +15,7 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
     stop("There must at least two variant files.")
   }
   if (!all(file.exists(variantFiles))) {
-    stop("Some of the files of variants could not be found.")
+    stop("Some of the files could not be found.")
   }
   
   ## initialize vcmat, pairwise variance concordant score between dirs
