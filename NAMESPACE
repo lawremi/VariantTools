@@ -12,6 +12,7 @@ importFrom(RBGL, connectedComp)
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
+importFrom(tools, file_ext)
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,
