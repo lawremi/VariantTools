@@ -29,8 +29,7 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
       loadVariants(variantFiles[i], ...)
     }, silent=TRUE)
     if (class(avar) == "try-error") {
-      stop("error: cannot load filtered_variants_granges in ",
-           variantFiles[i])
+      stop("error: cannot load '", variantFiles[i], "': ", avar)
     }
   
     for (j in (i+1):n) {
@@ -38,8 +37,7 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
         loadVariants(variantFiles[j], ...)
       }, silent=TRUE)
       if (class(bvar) == "try-error") {
-        stop("error: cannot load filtered_variants_granges in ",
-             variantFiles[j])
+        stop("error: cannot load '", variantFiles[j], "': ", avar)
       }
     
       ## compute variant concordance
