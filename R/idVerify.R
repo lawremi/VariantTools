@@ -1,6 +1,11 @@
 ## TODO: use dispatch on special file classes
+file_ext_sans_gz <- function(x) {
+  x <- sub("[.]gz$", "", x)
+  file_ext(x)
+}
+
 loadVariants <- function(x, ...) {
-  if (file_ext(x) == "vcf")
+  if (file_ext_sans_gz(x) == "vcf")
     readVcf(x, ...)
   else get(load(x))
 }
