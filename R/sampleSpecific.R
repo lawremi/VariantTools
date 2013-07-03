@@ -150,7 +150,7 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
 LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 {
   function(x) {
-    x.freq <- with(mcols(x), high.quality / high.quality.total)
+    x.freq <- with(mcols(x), altCount(x) / totalCount(x))
     m <- match(variantKeys(x), variantKeys(other))
     other.alt <- rep.int(0L, length(x))
     other.alt[!is.na(m)] <- other$count[m[!is.na(m)]]
@@ -162,9 +162,9 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 
 annotateWithControlCounts <- function(case.specific, control, control.cov) {
   m <- matchVariants(case.specific, control)
-  control.count <- control$high.quality[m]
+  control.count <- altCount(control)[m]
   control.count[is.na(control.count)] <- 0L
-  control.count.total <- control$high.quality.total[m]
+  control.count.total <- totalCount(control)[m]
   control.count.total[is.na(m)] <-
     extractCoverageForPositions(control.cov, case.specific[is.na(m)])
   case.specific$control.count <- control.count
