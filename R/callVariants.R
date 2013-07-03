@@ -48,6 +48,9 @@ altCount <- function(x) {
 refCount <- function(x) {
   ifelse(is.na(x$high.quality.ref), x$count.ref, x$high.quality.ref)
 }
+totalCount <- function(x) {
+  ifelse(is.na(x$high.quality.total), x$count.total, x$high.quality.total)
+}
 
 
 MinCountFilter <- function(min.count = 2L) {
