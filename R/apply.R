@@ -3,24 +3,24 @@
 ### -------------------------------------------------------------------------
 
 safe_mclapply <- function(X, FUN, ...) {
-  ans <- IRanges:::castList(mclapply(X, function(...) {
+  ans <- mclapply(X, function(...) {
     try(FUN(...), silent = !getOption("verbose"))
-  }, ...))
+  }, ...)
   cond <- batchCondition(ans)
   if (!is.null(cond))
     stop(cond)
-  ans
+  IRanges:::asList(ans)
 }
 
 safe_mcmapply <- function(FUN, ...) {
-  ans <- IRanges:::castList(mcmapply(function(...) {
+  ans <- mcmapply(function(...) {
     try(FUN(...), silent = !getOption("verbose"))
-  }, ..., SIMPLIFY = FALSE))
+  }, ..., SIMPLIFY = FALSE)
   cond <- batchCondition(ans)
   if (!is.null(cond)) {
     stop(cond)
   }
-  ans
+  IRanges:::asList(ans)
 }
 
 batchCondition <- function(x) {
