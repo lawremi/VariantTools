@@ -25,7 +25,7 @@ export(callSampleSpecificVariants, SampleSpecificVariantFilters)
 export(callWildtype, minCallableCoverage, flankingCycleBreaks)
 
 ## some utilities
-export(matchVariants, "%variant_in%", extractCoverageForPositions, isIndel)
+export(matchVariants, "%variant_in%", extractCoverageForPositions)
 
 ## API for next release
 ## export(checkVariantConcordance,

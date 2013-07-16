@@ -19,7 +19,3 @@ flankingCycleBreaks <- function(read_length, width = 10L) {
 installed <- function(x) {
   !is.na(suppressWarnings(packageDescription(x)))
 }
-
-isIndel <- function(x) {
-  nchar(ref(x)) != nchar(alt(x))
-}
