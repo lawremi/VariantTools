@@ -5,10 +5,9 @@ importFrom(parallel, mclapply, mcmapply)
 importFrom(Biostrings, DNAStringSet, detail)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
-importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome)
-importFrom(VariantAnnotation, VCFHeader, VCF, readVcf)
-importFrom(graph, graphNEL)
-importFrom(RBGL, connectedComp)
+importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
+importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno,
+           softFilter)
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
@@ -18,15 +17,15 @@ export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,
        callVariantConcordance, calculateVariantConcordance)
 export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
-       VariantPostFilters)
+       VariantPostFilters, TallyVariantsParam)
 export(variantGR2Vcf)
 
 export(callSampleSpecificVariants, SampleSpecificVariantFilters)
 
-export(callWildtype, minCallableCoverage)
+export(callWildtype, minCallableCoverage, flankingCycleBreaks)
 
 ## some utilities
-export(matchVariants, "%variant_in%")
+export(matchVariants, "%variant_in%", extractCoverageForPositions, isIndel)
 
 ## API for next release
 ## export(checkVariantConcordance,
