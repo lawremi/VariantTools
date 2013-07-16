@@ -21,9 +21,9 @@
                                   mc.cores = getOption("mc.cores", 2))
 \S4method{tallyVariants}{character}(x, ...)
 VariantTallyParam(genome, readlen = NA,
-                  cycle_flank_width = 10L,
-                  cycle_breaks = flankingCycleBreaks(readlen,
-                  cycle_flank_width),
+                  read_pos_flank_width = 10L,
+                  read_pos_breaks = flankingCycleBreaks(readlen,
+                  read_pos_flank_width),
                   high_base_quality = 0L,
                   minimum_mapq = 13L,
                   variant_strand = 1L, ignore_query_Ns = TRUE,
@@ -48,13 +48,13 @@ VariantTallyParam(genome, readlen = NA,
   \item{genome}{The genome, either a \code{\link[gmapR]{GmapGenome}} or
     something coercible to one.
   }
-  \item{readlen, cycle_flank_width}{
-    If \code{cycle_breaks} is missing, these two arguments are used to
-    generate a \code{cycle_breaks} for three bins, with the two outside
-    bins having \code{cycle_flank_width}. If \code{readlen} is
-    \code{NA}, \code{cycle_breaks} is not generated.
+  \item{readlen, read_pos_flank_width}{
+    If \code{read_pos_breaks} is missing, these two arguments are used to
+    generate a \code{read_pos_breaks} for three bins, with the two outside
+    bins having \code{read_pos_flank_width}. If \code{readlen} is
+    \code{NA}, \code{read_pos_breaks} is not generated.
   }
-  \item{cycle_breaks}{The breaks used for tabulating the cycles (read
+  \item{read_pos_breaks}{The breaks used for tabulating the read positions (read
     positions) at each position. If this information is included (not
     \code{NULL}), \code{\link{qaVariants}} will use it during filtering.
   }
