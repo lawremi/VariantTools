@@ -7,11 +7,11 @@
 }
 \description{
   Filters a tally \code{GRanges} through a series of simple checks for
-  strand and cycle (read position) biases.
+  strand and read position (read position) biases.
 }
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
-VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-4,
+VariantQAFilters(read.pos.count = 1L, fisher.strand.p.value = 1e-4,
                  read.pos.p.value = 1e-4, mask = GRanges())
 }
 
@@ -26,8 +26,8 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-4,
   \item{\dots}{
     Arguments passed to \code{VariantQAFilters}, listed below.
   }
-  \item{cycle.count}{Minimum number of unique cycles for the alternate
-    base.
+  \item{read.pos.count}{Minimum number of unique read positions for the
+    alternate base.
   }
   \item{fisher.strand.p.value}{p-value cutoff for the Fisher's Exact Test for
     strand bias (+/- counts, alt vs. ref). Any variants with p-values
@@ -44,15 +44,16 @@ VariantQAFilters(cycle.count = 2L, fisher.strand.p.value = 1e-4,
 \details{
   There are currently three QA filters:
   \itemize{
-    \item{Alternate base was read at a minimum (2) number of unique
-      cycles. This avoids false positives from one aberrant cycle.
+    \item{Alternate base was read at a minimum (1) number of unique
+      read positions. We recommend setting this to 2 or more if
+      duplicate alignments have not been filtered during tallying. 
     }
     \item{Fisher's Exact Test for strand bias, using the +/- counts, alt
       vs. ref. If the null is rejected, the variant is discarded.
     }
-    \item{If the tallies contain cycle bin counts, the variant must have
+    \item{If the tallies contain read position bin counts, the variant must have
       at least one count in the middle bins
-      (those not at the start or end). We trust the internal cycles more.
+      (those not at the start or end). We trust the internal read positions more.
     }
     \item{Read position t-test comparing the mean read position for the
       reference and alt reads. Any imbalance probably indicates mapping

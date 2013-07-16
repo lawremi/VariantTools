@@ -1,29 +1,19 @@
 ### =========================================================================
-### QA Variant Filtering (as opposed to the calling filters)
+### Variant QA (as opposed to the calling filters)
 ### -------------------------------------------------------------------------
-
-sanitizeVariants <- function(x, ...) {
-  subsetByFilter(x, VariantSanityFilters(...))
-}
-
-VariantSanityFilters <- function() {
-  FilterRules(list(nonRef = NonRefFilter(), nonNRef = NonNRefFilter()))
-}
 
 qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
 {
-  subsetByFilter(x, qa.filters)
+  softFilter(x, qa.filters)
 }
 
-VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4,
-                             read.pos.p.value = 1e-4, mask = GRanges())
+VariantQAFilters <- function(read.pos.count = 2L, fisher.strand.p.value = 1e-4,
+                             read.pos.p.value = 1e-4)
 {
-  c(VariantSanityFilters(),
-    FilterRules(c(cycleCount = CycleCountFilter(cycle.count),
-                  fisherStrand = FisherStrandFilter(fisher.strand.p.value),
-                  cycleBin = InternalCycleBinFilter(),
-                  readPosTTest = ReadPositionTTestFilter(read.pos.p.value),
-                  mask = MaskFilter(mask))))
+  FilterRules(c(readPosCount = ReadPosCountFilter(read.pos.count),
+                fisherStrand = FisherStrandFilter(fisher.strand.p.value),
+                readPosBin = InternalReadPosBinFilter(),
+                readPosTTest = ReadPositionTTestFilter(read.pos.p.value)))
 }
 
 ## With new gmapR, this is only necessary for filtering the ref N's.
@@ -31,28 +21,20 @@ VariantQAFilters <- function(cycle.count = 2L, fisher.strand.p.value = 1e-4,
 ## But this is OK for now.
 NonNRefFilter <- function() {
   function(x) {
-    as.character(x$ref) != 'N'
+    as.character(ref(x)) != 'N'
   }
 }
 
 ## Drops the ref rows (should not be necessary)
 NonRefFilter <- function() {
   function(x) {
-    !is.na(x$alt)
+    !is.na(alt(x))
   }
 }
 
-CycleCountFilter <- function(cycle.count = 2L) {
+ReadPosCountFilter <- function(read.pos.count = 1L) {
   function(x) {
-    x$ncycles >= cycle.count
-  }
-}
-
-BinomialErrorFilter <- function(p.error = 1/1000, p.value = 0.01) {
-  function(x) {
-    p <- pbinom(values(x)$count - 1, values(x)$count.total, prob = p.error,
-                lower.tail = FALSE)
-    p < p.value
+    (if (!is.null(x$ncycles)) x$ncycles else x$n.read.pos) >= read.pos.count
   }
 }
 
@@ -67,10 +49,10 @@ FisherStrandFilter <- function(p.value = 1e-4) {
   }
 }
 
-InternalCycleBinFilter <- function(min.count = 1L) {
+InternalReadPosBinFilter <- function(min.count = 1L) {
   function(x) {
-    cycle_columns <- grep("cycleCount", colnames(mcols(x)), value = TRUE)
-    alt_columns <- grep("ref", cycle_columns, invert = TRUE, value = TRUE)
+    read_pos_columns <- grep("readPosCount", colnames(mcols(x)), value = TRUE)
+    alt_columns <- grep("ref", read_pos_columns, invert = TRUE, value = TRUE)
     internal_columns <- tail(head(alt_columns, -1), -1)
     if (length(internal_columns) > 0L)
       rowSums(as.matrix(mcols(x)[internal_columns])) >= min.count
@@ -89,7 +71,7 @@ ReadPositionTTestFilter <- function(p.value.cutoff = 1e-4) {
   function(x) {
     p <- with(mcols(x), t.test_welch(read.pos.mean, read.pos.mean.ref,
                                      read.pos.var, read.pos.var.ref,
-                                     count, count.ref))
+                                     rawAltDepth(x), rawTotalDepth(x)))
     ans <- p > p.value.cutoff
     ans[is.na(ans)] <- TRUE
     ans
@@ -98,7 +80,7 @@ ReadPositionTTestFilter <- function(p.value.cutoff = 1e-4) {
 
 DistanceToNearestFilter <- function(min.dist = 10L) {
   function(x) {
-    distanceToNearest(x)$distance > min.dist
+    mcols(distanceToNearest(x))$distance > min.dist
   }
 }
 
@@ -110,7 +92,7 @@ NeighborCountFilter <- function(max.count = 2L, window.size = 75L) {
 
 IndelsNotSupportedFilter <- function() {
   function(x) {
-    nzchar(x$ref) & nzchar(x$alt)
+    nzchar(ref(x)) & nzchar(alt(x))
   }
 }
 
