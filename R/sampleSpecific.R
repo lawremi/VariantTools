@@ -58,14 +58,11 @@ setGeneric("callSampleSpecificVariants", function(case, control, ...) {
 
 setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
           function(case, control, control.cov,
-                   qa.filters = VariantQAFilters(),
                    calling.filters = VariantCallingFilters(),
                    post.filters = VariantPostFilters(),
                    ...)
           {
-            case.called <- callVariants(qaVariants(case, qa.filters),
-                                        calling.filters, post.filters)
-            
+            case.called <- callVariants(case, calling.filters, post.filters)
             filters <- SampleSpecificVariantFilters(control,
                                                     control.cov,
                                                     calling.filters,
@@ -123,7 +120,6 @@ extractCoverageForPositions <- function(cov, pos) {
     stop("Some ranges are of width > 1")
   seqlevels(pos) <- names(cov)
   ord <- order(pos)
-  pos <- pos[ord]
   rl <- as(pos, "RangesList")
   ans <- integer(length(pos))
   ans[ord] <- as.vector(unlist(seqselect(cov, rl), use.names = FALSE))
@@ -150,10 +146,10 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
 LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 {
   function(x) {
-    x.freq <- with(mcols(x), altCount(x) / totalCount(x))
+    x.freq <- altDepth(x) / totalDepth(x)
     m <- match(variantKeys(x), variantKeys(other))
     other.alt <- rep.int(0L, length(x))
-    other.alt[!is.na(m)] <- other$count[m[!is.na(m)]]
+    other.alt[!is.na(m)] <- rawAltDepth(other)[m[!is.na(m)]]
     other.total <- extractCoverageForPositions(other.cov, x)
     p <- pbinom(other.alt, other.total, x.freq)
     p < p.value
@@ -162,9 +158,9 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 
 annotateWithControlCounts <- function(case.specific, control, control.cov) {
   m <- matchVariants(case.specific, control)
-  control.count <- altCount(control)[m]
+  control.count <- altDepth(control)[m]
   control.count[is.na(control.count)] <- 0L
-  control.count.total <- totalCount(control)[m]
+  control.count.total <- totalDepth(control)[m]
   control.count.total[is.na(m)] <-
     extractCoverageForPositions(control.cov, case.specific[is.na(m)])
   case.specific$control.count <- control.count
