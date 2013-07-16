@@ -68,11 +68,10 @@ library(VariantTools)
 p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = range(p53),
-                                 indels = TRUE)
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = range(p53),
+                                  indels = TRUE)
 called.variants <- callVariants(bam, tally.param)
 @ %$
 %
@@ -126,22 +125,34 @@ their man pages for the arguments available for customization.
 The first step is to tally the variants from the BAM file. By default,
 this will return observed differences from the reference, excluding N
 calls and only counting reads above 13 in mapping quality (MAPQ)
-score. There are three cycle bins: the first 10 bases, the final 10
+score. There are three read position bins: the first 10 bases, the final 10
 bases, and the stretch between them (these will be used in the QA
 step).
 <<tallyVariants>>=
-raw.variants <- tallyVariants(bam, tally.param)
+raw.variants <- tallyVariants(bam, tally.param, mc.cores=1)
 @ 
 
-Next, basic QA filters are applied. These include a minimum read count
-(2) check, minimum unique cycle count (2) check, and Fisher Exact Test
+Unless one is running a variant caller in a routine fashion over
+familiar types of data, we highly recommend performing detailed QC of
+the tally results. \Rpackage{VariantTools} provides several QA filters
+that aim to expose artifacts, especially those generated during
+alignment. These filters are \emph{not} designed for filtering during
+actual calling; rather, they are meant for annotating the variants
+during exploratory analysis. The filters include a minimum read count
+(2) check, minimum unique read position count (2) check, and Fisher Exact Test
 on the per-strand counts vs. reference for strand bias (p-value
-cutoff: 0.001). If there are at least three cycle bins in the tallies,
-at least one read must present the variant in an internal cycle
+cutoff: 0.001). If there are at least three read position bins in the tallies,
+at least one read must present the variant in an internal read position
 bin. The intent is to ensure that we have sufficient data and that the
-data are not due to strand-specific nor cycle-specific artifacts.
+data are not due to strand-specific nor read position-specific artifacts.
+
+The \Rfunction{qaVariants} function will \emph{soft} filter the
+variants via \Rfunction{softFilter}. No variants are removed; the
+filter results are added to the \Rfunction{softFilterMatrix} component
+of the object.
 <<qaVariants>>=
 qa.variants <- qaVariants(raw.variants)
+head(softFilterMatrix(qa.variants))
 @ 
 
 The final step is to actually call the variants. The
@@ -187,7 +198,7 @@ number of variants that pass each filter, separately and then combined:
 summary(qa.filters, raw.variants)
 @ 
 %
-Now we retrieve the variants that pass the filters:
+Now we retrieve only the variants that pass the filters:
 <<VariantQAFilters-subset>>=
 qa.variants <- subsetByFilter(raw.variants, qa.filters)
 @ 
@@ -212,8 +223,8 @@ raw.variants[fs.original != fs.custom]
 Below, we demonstrate how one might add a mask to e.g. filter out
 variants in low complexity regions, where mapping errors tend to dominate:
 <<VariantQAFilters-mask>>=
-mask <- GRanges("TP53", IRanges(1010000, width=10000))
-qa.variants.masked <- qaVariants(raw.variants, mask = mask)
+tally.param@mask <- GRanges("TP53", IRanges(1010000, width=10000))
+raw.variants.masked <- tallyVariants(bam, tally.param)
 @
 
 We can also diagnose the filters for calling variants after basic QA
@@ -296,10 +307,14 @@ VCF is a common file format for communicating variants. To export our
 variants to a VCF file, we first need to coerce the \Rclass{GRanges}
 to a \Rclass{VCF} object. Then, we use \Rfunction{writeVcf} from the
 \Rpackage{VariantAnnotation} package to write the file (indexing is
-highly recommended for large files).
+highly recommended for large files). Note that the sample names need
+to be non-missing to generate the VCF. Also, for simplicity and
+scalability, we typically do not want to output all of our metadata
+columns, so we remove all of them here.
 <<variantGR2VCF>>=
-vcf <- variantGR2Vcf(called.variants, sample.id = "H1993",
-                     project = "VariantTools_Vignette")
+sampleNames(called.variants) <- "H1993"
+mcols(called.variants) <- NULL
+vcf <- asVCF(called.variants)
 @ 
 <<writeVcf, eval=FALSE>>=
 writeVcf(vcf, "H1993.vcf", index = TRUE)
@@ -324,6 +339,7 @@ particular set of positions, one can pass a \Rclass{GenomicRanges}
 argument. When \Rfunarg{pos} is specfied, each element of the result
 corresponds to an element in \Rfunarg{pos}.
 <<callWildtype>>=
+called.variants <- called.variants[!isIndel(called.variants)]
 pos <- c(called.variants, shift(called.variants, 3))
 wildtype <- callWildtype(bam, called.variants, VariantCallingFilters(), 
                          pos = pos, power = 0.85)
