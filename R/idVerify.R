@@ -4,9 +4,25 @@ file_ext_sans_gz <- function(x) {
   file_ext(x)
 }
 
+## HACK: just for ID verify to work with GATK output
+vcfToVariantGRanges <- function(from) {
+  from <- expand(from)
+  rd <- rowData(from)
+  ref <- rd$REF
+  alt <- rd$ALT
+  ad <- geno(from)$AD
+  ad.m <- matrix(unlist(ad), 2)
+  refDepth <- ad.m[1,]
+  GRanges(seqnames(rd), ranges(rd), "+", ref, alt, refDepth)
+}
+readVariantGRangesFromVCF <- function(x, ...) {
+  vcf <- readVcf(x, ...)
+  vcf2VariantGRanges(vcf)
+}
+
 loadVariants <- function(x, ...) {
   if (file_ext_sans_gz(x) == "vcf")
-    readVcf(x, ...)
+    readVariantGRangesFromVCF(x, ...)
   else get(load(x))
 }
 
@@ -64,6 +80,9 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
 
 callVariantConcordance <- function(concordanceMatrix,
                                    threshold) {
+  if (!installed("RBGL"))
+    stop("The 'RBGL' package is required for finding the concordant cliques")
+  
   concordantCliques <- .getConcordantCliques(concordanceMatrix,
                                              threshold)
   ## test if connected components are cliques of
@@ -102,6 +121,6 @@ callVariantConcordance <- function(concordanceMatrix,
     indicesOfConnectedNodes <- which(adj[, i] == TRUE)
     edL[[i]] <- list(edges=indicesOfConnectedNodes)
   }
-  gR <- graphNEL(nodes=V, edgeL=edL)
-  connectedComp(gR)
+  gR <- graph::graphNEL(nodes=V, edgeL=edL)
+  RBGL::connectedComp(gR)
 }
