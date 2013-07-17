@@ -65,7 +65,7 @@ metastatis and H2073 is derived from the primary tumor.
 Below, we call variants from a region around the p53 gene:
 <<callVariants>>=
 library(VariantTools)
-p53 <- gmapR:::exonsOnTP53Genome("TP53")
+p53 <- gmapR:::exonsOnTP53Genome("TP53") + 1e5
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
 tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
