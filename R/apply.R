@@ -73,8 +73,28 @@ applyByChromosome <- function(X, FUN, ...) {
   if (!is(X, "Seqinfo"))
     X <- seqinfo(X)
   gr <- as(X, "GenomicRanges")
-  ind <- seq_len(length(gr))
-  safe_mclapply(ind, function(i, ...) {
-    FUN(gr[i], ...)
-  }, ...)
+  bpvec(gr, FUN, ...)
 }
+
+setMethod("bpvec", "GmapGenome",
+          function(X, FUN, ..., AGGREGATE = c, BPPARAM = defaultBPPARAM()) {
+            X <- seqinfo(X)
+            callGeneric()
+          })
+
+setMethod("bplapply", c(BPPARAM = "list"), function(X, FUN, ..., BPPARAM) {
+  if (!all(as.character(lapply(BPPARAM, is, "BiocParallelParam"))))
+    stop("All elements in 'BPPARAM' must be BicoParallelParam objects")
+  if (length(BPPARAM) == 0L)
+    stop("'length(BPPARAM)' must be > 0")
+  myBPPARAM <- BPPARAM[[1]]
+  BPPARAM <- tail(BPPARAM, -1)
+  if (length(BPPARAM) > 0L) {
+    myFUN <- function(...) {
+      FUN(..., BPPARAM = BPPARAM)
+    }
+  } else myFUN <- FUN
+  if (length(BPPARAM) == 1L)
+    BPPARAM <- BPPARAM[[1]]
+  bplapply(X, myFUN, ..., BPPARAM = myBPPARAM)
+})

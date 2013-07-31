@@ -12,6 +12,7 @@ importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
 importFrom(tools, file_ext)
+importFrom(BiocParallel, bpvec, registered, bplapply)
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,

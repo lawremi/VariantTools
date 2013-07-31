@@ -4,57 +4,36 @@
 
 setGeneric("tallyVariants", function(x, ...) standardGeneric("tallyVariants"))
 
+defaultBPPARAM <- function() registered()[[1]]
+
 setMethod("tallyVariants", "BamFile",
           function(x, param = TallyVariantsParam(...), ...,
-                   mc.cores = getOption("mc.cores", 2))
+                   BPPARAM = defaultBPPARAM())
           {
-            tally_region <- function(which) {
+            tally_region <- function(x, ind, param) {
+              which <- which[ind]
               iit <- bam_tally(x, param@bamTallyParam, which = which)
-              variantSummary(iit, param@read_pos_breaks,
-                             param@high_base_quality)
+              ans <- variantSummary(iit, param@read_pos_breaks,
+                                    param@high_base_quality)
+              ans[!(ans %over% param@mask)]
             }
             which <- param@bamTallyParam@which
             if (length(which) == 0L) {
-              genome <- param@bamTallyParam@genome
-              si <- intersect(seqinfo(genome), seqinfo(x))
-              ans <- applyByChromosome(si, tally_region,
-                                       mc.cores = mc.cores)
-            } else {
-              if (length(which) == 1L) {
-                chunks <- breakInChunks(width(which),
-                                        ceiling(width(which) / mc.cores))
-                which <- GRanges(seqnames(which),
-                                 IRanges(start(which) + start(chunks) - 1L,
-                                         width = width(chunks)))
-              }
-              ind <- seq_len(length(which))
-              ans <- safe_mclapply(ind, function(i) {
-                tally_region(which[i])
-              }, mc.cores = mc.cores)
+              which <- as(seqinfo(param@bamTallyParam@genome), "GenomicRanges")
             }
-            ans.flat <- unlist(ans, use.names = FALSE)
-            ans.flat[!(ans.flat %over% param@mask)]
+            ind <- seq_len(length(which))
+            ans <- bplapply(ind, tally_region, x = x, param = param,
+                            BPPARAM = BPPARAM)
+            do.call(c, unname(ans))
           })
 
 setMethod("tallyVariants", "BamFileList", function(x, ...) {
-  stackSamples(VRangesList(lapply(x, tallyVariants, ...)))
+  stackSamples(VRangesList(bplapply(x, tallyVariants, ...)))
 })
 
 setMethod("tallyVariants", "character", function(x, ...) {
   tallyVariants(BamFile(x), ...)
 })
-
-## PLAN:
-## - Create an IIT class that wraps the IIT externalptr
-## - Rename VariantTallyParam to TallyVariantsParam (consistent with function)
-## - Extract variant summary stuff from bam_tally into summarizeAlleles().
-##   The bam_tally function will return an IIT object. 
-## - Create an actual class named TallyVariantsParam, composed of:
-##   - BamTallyParam
-##   - SummarizeAllelesParam (may be overkill)
-##   - Mask
-## - In theory, could make tallyVariants dispatch on both the 'x' and 'param'.
-##   This would allow totally new tallying algorithms.
 
 setClass("TallyVariantsParam",
          representation(bamTallyParam = "BamTallyParam",

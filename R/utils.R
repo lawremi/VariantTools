@@ -19,3 +19,11 @@ flankingCycleBreaks <- function(read_length, width = 10L) {
 installed <- function(x) {
   !is.na(suppressWarnings(packageDescription(x)))
 }
+
+chunkRange <- function(which, n) {
+  chunks <- breakInChunks(width(which), ceiling(width(which) / n))
+  which <- GRanges(seqnames(which),
+                   IRanges(start(which) + start(chunks) - 1L,
+                           width = width(chunks)))
+
+}
