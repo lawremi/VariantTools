@@ -6,9 +6,11 @@
 variantGRanges2VRanges <- function(x) {
   builtin.cols <- c("ref", "alt", "high.quality.ref", "high.quality",
                     "high.quality.total")
-  mcols <- mcols(x)[setdiff(colnames(mcols(x)), builtin.cols)]
-  with(mcols(x), VRanges(seqnames(x), ranges(x), ref, alt, high.quality.total,
-                         high.quality.ref, high.quality, mcols))
+  ans <- with(mcols(x),
+              VRanges(seqnames(x), ranges(x), ref, alt, high.quality.total,
+                      high.quality.ref, high.quality))
+  mcols(ans) <- mcols(x)[setdiff(colnames(mcols(x)), builtin.cols)]
+  ans
 }
 
 variantGRangesIsDeprecated <- function(old) {
