@@ -11,7 +11,7 @@ setGeneric("callVariants", function(x, ...) standardGeneric("callVariants"))
 setMethod("callVariants", "BamFile",
           function(x, tally.param,
                    calling.filters = VariantCallingFilters(...),
-                   post.filters = VariantPostFilters(),
+                   post.filters = FilterRules(),
                    ...)
           {
             raw_variants <- tallyVariants(x, tally.param)
@@ -24,7 +24,7 @@ setMethod("callVariants", "character", function(x, ...) {
 
 setMethod("callVariants", "GenomicRanges",
           function(x, calling.filters = VariantCallingFilters(...),
-                   post.filters = VariantPostFilters(), ...)
+                   post.filters = FilterRules(), ...)
           {
             variantGRangesIsDeprecated("callVariants,GenomicRanges")
             callVariants(variantGRangesToVRanges(x),
@@ -34,7 +34,7 @@ setMethod("callVariants", "GenomicRanges",
 
 setMethod("callVariants", "VRanges",
           function(x, calling.filters = VariantCallingFilters(...),
-                   post.filters = VariantPostFilters(), ...)
+                   post.filters = FilterRules(), ...)
           {
             called_variants <- subsetByFilter(x, calling.filters)
             postFilterVariants(called_variants, post.filters)
