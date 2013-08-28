@@ -17,7 +17,7 @@ vcfToVariantGRanges <- function(from) {
 }
 readVariantGRangesFromVCF <- function(x, ...) {
   vcf <- readVcf(x, ...)
-  vcf2VariantGRanges(vcf)
+  vcfToVariantGRanges(vcf)
 }
 
 loadVariants <- function(x, ...) {
