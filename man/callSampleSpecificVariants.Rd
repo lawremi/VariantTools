@@ -111,9 +111,8 @@ SampleSpecificVariantFilters(control, control.cov, calling.filters,
 }
 \examples{
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = gmapR::TP53Which())
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = gmapR::TP53Which())
 callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param)
 }

@@ -4,14 +4,20 @@
   Create a VCF for some variants
 }
 \description{
-  Creates a \code{\link[VariantAnnotation]{VCF}} object from a
-  variant/tally \code{GRanges}. This can then be output to a file using
+  The \strong{deprecated} way to create a
+  \code{\link[VariantAnnotation]{VCF}} object from a variant/tally
+  \code{GRanges}. This can then be output to a file using
   \code{\link[VariantAnnotation]{writeVcf}}. The flavor of VCF is
   specific for calling variants, not genotypes; see below.
 }
 \usage{
 variantGR2Vcf(x, sample.id, project = NULL,
               genome = unique(GenomicRanges::genome(x)))
+}
+\note{
+  This function is \strong{DEPRECATED}. The \code{callVariants} function
+  now returns a \code{\link[VariantAnnotation]{VRanges}} object that can
+  be coerced to a \code{VCF} object via \code{as(x, "VCF")}.
 }
 \arguments{
   \item{x}{
@@ -76,9 +82,8 @@ variantGR2Vcf(x, sample.id, project = NULL,
   Michael Lawrence, Jeremiah Degenhardt
 }
 \examples{
-example(callVariants)
-vcf <- variantGR2Vcf(variants, "H1993", "example")
 \dontrun{
+vcf <- variantGR2Vcf(variants, "H1993", "example")
 writeVcf(vcf, "H1993.vcf", index = TRUE)
 }
 }

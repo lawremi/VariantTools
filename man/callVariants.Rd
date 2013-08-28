@@ -16,14 +16,13 @@
 }
 \usage{
 \S4method{callVariants}{BamFile}(x, tally.param,
-                                 qa.filters = VariantQAFilters(),
                                  calling.filters = VariantCallingFilters(...),
-                                 post.filters = VariantPostFilters(),
+                                 post.filters = FilterRules(),
                                  ...)
 \S4method{callVariants}{character}(x, ...)
 \S4method{callVariants}{GenomicRanges}(x,
      calling.filters = VariantCallingFilters(...),
-     post.filters = VariantPostFilters(),
+     post.filters = FilterRules(),
      ...)
 VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 }
@@ -36,9 +35,6 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   \item{tally.param}{
     Parameters controlling the variant tallying step,
     as typically constructed by \code{\link{VariantTallyParam}}.
-  }
-  \item{qa.filters}{
-    Filters used in the QA step, see \code{\link{VariantQAFilters}}.
   }
   \item{calling.filters}{
     Filters used in the calling step, typically constructed with
@@ -76,8 +72,9 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   variant is also required to be represented by at least 2 alt
   reads. The post-filtering stage considers the set of variant calls as
   a whole and removes variants with suspicious patterns. Currently,
-  there is a single post-filter that removes variants that are clumped
-  together on the chromosome (see the \code{max.nbor.count} parameter).
+  there is a single post-filter, disabled by default, that removes
+  variants that are clumped together on the chromosome (see the
+  \code{max.nbor.count} parameter).
 }
 \value{
   For \code{callVariants}, a \code{GRanges} of the called variants (the
@@ -93,16 +90,14 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 }
 \examples{
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = gmapR::TP53Which())
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = gmapR::TP53Which())
 
 ## simple usage
 variants <- callVariants(bams$H1993, tally.param)
 
 ## customize
-qa.filters <- VariantQAFilters(fisher.strand.p.value = 1e-4)
 calling.filters <- VariantCallingFilters(p.error = 1/1000)
-callVariants(bams$H1993, tally.param, qa.filters, calling.filters)
+callVariants(bams$H1993, tally.param, calling.filters)
 }

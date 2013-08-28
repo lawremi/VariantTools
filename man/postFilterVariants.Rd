@@ -58,13 +58,15 @@ VariantPostFilters(max.nbor.count = 0.1, whitelist = NULL)
 \examples{
 p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = range(p53))
-# disable post-filtering during variant calling
-called.variants <- callVariants(bams[[1]], tally.param,
-                                post.filters = FilterRules())
-# and apply at a later time...
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = range(p53))
+# post-filters are not enabled by default during calling
+called.variants <- callVariants(bams[[1]], tally.param)
+# but can be applied at a later time...
 postFilterVariants(called.variants, max.nbor.count = 0.15)
+
+# or enable during calling
+called.variants <- callVariants(bams[[1]], tally.param,
+                                post.filters = VariantPostFilters())
 }

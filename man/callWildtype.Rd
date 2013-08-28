@@ -63,10 +63,9 @@ minCallableCoverage(calling.filters, power = 0.80, max.coverage = 1000L)
 p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = range(p53))
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = range(p53))
 called.variants <- callVariants(bam, tally.param)
 
 pos <- c(called.variants, shift(called.variants, 3))

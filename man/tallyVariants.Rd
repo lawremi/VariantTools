@@ -58,9 +58,9 @@ VariantTallyParam(genome, readlen = NA,
     positions) at each position. If this information is included (not
     \code{NULL}), \code{\link{qaVariants}} will use it during filtering.
   }
-  \item{high_base_quality}{The cutoff for whether a base is counted as
-    high quality. By default, \code{\link{callVariants}} will use the
-    high quality counts in the likelihood ratio test. Note that
+  \item{high_base_quality}{The minimum cutoff for whether a base is
+    counted as high quality. By default, \code{\link{callVariants}} will
+    use the high quality counts in the likelihood ratio test. Note that
     \code{bam_tally} will shift your quality scores by 33 no matter what
     type they are. If Illumina (pre 1.8) this will result in a range of
     31-71. If Sanger/Illumina1.8 this will result in a range of
@@ -98,10 +98,9 @@ VariantTallyParam(genome, readlen = NA,
 }
 
 \examples{
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = gmapR::TP53Which())
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = gmapR::TP53Which())
 bams <- LungCancerLines::LungCancerBamFiles()
 raw.variants <- tallyVariants(bams$H1993, tally.param)
 }

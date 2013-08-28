@@ -81,10 +81,9 @@ VariantQAFilters(read.pos.count = 1L, fisher.strand.p.value = 1e-4,
 
 \examples{
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- VariantTallyParam(gmapR::TP53Genome(), 
-                                 readlen = 100L,
-                                 high_base_quality = 23L,
-                                 which = gmapR::TP53Which())
+tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                  high_base_quality = 23L,
+                                  which = gmapR::TP53Which())
 tally.variants <- tallyVariants(bams$H1993, tally.param)
 qaVariants(tally.variants, fisher.strand.p.value = 1e-4)
 }
