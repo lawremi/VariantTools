@@ -18,7 +18,7 @@
 }
 \usage{
 \S4method{tallyVariants}{BamFile}(x, param = VariantTallyParam(...), ...,
-                                  mc.cores = getOption("mc.cores", 2))
+                                  BPPARAM = defaultBPPARAM())
 \S4method{tallyVariants}{character}(x, ...)
 VariantTallyParam(genome, readlen = NA,
                   read_pos_flank_width = 10L,
@@ -83,8 +83,10 @@ VariantTallyParam(genome, readlen = NA,
   }
   \item{ignore_duplicates}{whether to ignore reads flagged as
     PCR/optical duplicates}
-  \item{mc.cores}{The number of cores to use when parallelizing over the
-    chromosomes.
+  \item{BPPARAM}{A
+    \code{\link[BiocParallel:BiocParallelParam-class]{BiocParallelParam}}
+    object specifying the resources and strategy for parallelizing the
+    tally operation over the chromosomes.
   }
 }
 \value{

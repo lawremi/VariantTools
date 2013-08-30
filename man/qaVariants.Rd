@@ -12,7 +12,7 @@
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
 VariantQAFilters(read.pos.count = 1L, fisher.strand.p.value = 1e-4,
-                 read.pos.p.value = 1e-4, mask = GRanges())
+                 read.pos.p.value = 1e-4)
 }
 
 \arguments{
@@ -36,9 +36,6 @@ VariantQAFilters(read.pos.count = 1L, fisher.strand.p.value = 1e-4,
   \item{read.pos.p.value}{
     p-value cutoff for the read position t-test
     between the variant and reference calls
-  }
-  \item{mask}{A \code{GRanges} with regions to exclude from
-    consideration; e.g., simple repeats. Strand is not considered.
   }
 }
 \details{
