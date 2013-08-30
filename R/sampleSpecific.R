@@ -59,7 +59,7 @@ setGeneric("callSampleSpecificVariants", function(case, control, ...) {
 setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
           function(case, control, control.cov,
                    calling.filters = VariantCallingFilters(),
-                   post.filters = VariantPostFilters(),
+                   post.filters = FilterRules(),
                    ...)
           {
             case.called <- callVariants(case, calling.filters, post.filters)
