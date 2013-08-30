@@ -278,6 +278,7 @@ Here, we find the somatic mutations from a matched tumor/normal
 pair. Since we are starting from BAM files, we have to provide
 \Robject{tally.param} for the tally step. 
 <<callSomaticMutations>>=
+tally.param@bamTallyParam@indels <- FALSE
 somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param)
 @ 
 %$
