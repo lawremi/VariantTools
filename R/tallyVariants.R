@@ -15,6 +15,8 @@ setMethod("tallyVariants", "BamFile",
               iit <- bam_tally(x, param@bamTallyParam, which = which)
               ans <- variantSummary(iit, param@read_pos_breaks,
                                     param@high_base_quality)
+              if (!param@keep_extra_stats)
+                mcols(ans) <- NULL
               ans[!(ans %over% param@mask)]
             }
             which <- param@bamTallyParam@which
@@ -39,15 +41,17 @@ setClass("TallyVariantsParam",
          representation(bamTallyParam = "BamTallyParam",
                         read_pos_breaks = "integer",
                         high_base_quality = "integer",
-                        mask = "GenomicRanges"))
+                        mask = "GenomicRanges",
+                        keep_extra_stats = "logical"))
 
 TallyVariantsParam <- function(genome,
                                read_pos_breaks = NULL,
                                high_base_quality = 0L,
-                               minimum_mapq = 13L, 
+                               minimum_mapq = 13L,
                                variant_strand = 1L, ignore_query_Ns = TRUE,
                                ignore_duplicates = TRUE,
                                mask = GRanges(),
+                               keep_extra_stats = TRUE,
                                ...)
 {
   if (variant_strand < 1 || variant_strand > 2)
@@ -64,7 +68,7 @@ TallyVariantsParam <- function(genome,
   new("TallyVariantsParam", bamTallyParam = bam.tally.param,
       read_pos_breaks = as.integer(read_pos_breaks),
       high_base_quality = as.integer(high_base_quality),
-      mask = mask)
+      mask = mask, keep_extra_stats = as.logical(keep_extra_stats))
 }
 
 VariantTallyParam <- function(genome,
@@ -73,14 +77,14 @@ VariantTallyParam <- function(genome,
                               read_pos_breaks = flankingCycleBreaks(readlen,
                                 read_pos_flank_width),
                               high_base_quality = 0L,
-                              minimum_mapq = 13L, 
+                              minimum_mapq = 13L,
                               variant_strand = 1L, ignore_query_Ns = TRUE,
                               ignore_duplicates = TRUE,
                               ...)
 {
   .Deprecated("TallyVariantsParam")
   TallyVariantsParam(genome, read_pos_breaks,
-                     high_base_quality, minimum_mapq, 
+                     high_base_quality, minimum_mapq,
                      variant_strand, ignore_query_Ns,
                      ignore_duplicates,
                      ...)
