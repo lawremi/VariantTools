@@ -14,7 +14,8 @@ setMethod("tallyVariants", "BamFile",
               which <- which[ind]
               iit <- bam_tally(x, param@bamTallyParam, which = which)
               ans <- variantSummary(iit, param@read_pos_breaks,
-                                    param@high_base_quality)
+                                    param@high_base_quality,
+                                    param@bamTallyParam@variant_strand == 0L)
               if (!param@keep_extra_stats)
                 mcols(ans) <- NULL
               ans[!(ans %over% param@mask)]
@@ -48,14 +49,14 @@ TallyVariantsParam <- function(genome,
                                read_pos_breaks = NULL,
                                high_base_quality = 0L,
                                minimum_mapq = 13L,
-                               variant_strand = 1L, ignore_query_Ns = TRUE,
+                               variant_strand = c(1L, 0L, 2L),
+                               ignore_query_Ns = TRUE,
                                ignore_duplicates = TRUE,
                                mask = GRanges(),
                                keep_extra_stats = TRUE,
                                ...)
 {
-  if (variant_strand < 1 || variant_strand > 2)
-    stop("'variant_strand' must be 1 or 2")
+  variant_strand <- match.arg(variant_strand)
   if (!isTRUE(ignore_query_Ns))
     stop("'ignore_query_Ns' must be TRUE")
   bam.tally.args <- list(genome = genome,
