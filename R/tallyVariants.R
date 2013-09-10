@@ -49,14 +49,15 @@ TallyVariantsParam <- function(genome,
                                read_pos_breaks = NULL,
                                high_base_quality = 0L,
                                minimum_mapq = 13L,
-                               variant_strand = c(1L, 0L, 2L),
+                               variant_strand = 1L,
                                ignore_query_Ns = TRUE,
                                ignore_duplicates = TRUE,
                                mask = GRanges(),
                                keep_extra_stats = TRUE,
                                ...)
 {
-  variant_strand <- match.arg(variant_strand)
+  if (!isSingleNumber(variant_strand) || !(variant_strand %in% c(0, 1, 2)))
+    stop("'variant_strand' must be either 0, 1, or 2")
   if (!isTRUE(ignore_query_Ns))
     stop("'ignore_query_Ns' must be TRUE")
   bam.tally.args <- list(genome = genome,
