@@ -78,7 +78,7 @@ setMethod("callSampleSpecificVariants", c("BamFile", "BamFile"),
             control.raw <- tallyVariants(control, tally.param)
 
             control.cov <- coverage(control, drop.D.ranges = TRUE)
-            
+
             callSampleSpecificVariants(case.raw, control.raw, control.cov, ...)
           })
 
@@ -119,7 +119,7 @@ extractCoverageForPositions <- function(cov, pos) {
   if (any(width(pos) > 1L))
     stop("Some ranges are of width > 1")
   seqlevels(pos) <- names(cov)
-  ord <- order(pos)
+  ord <- order(seqnames(pos))
   rl <- as(pos, "RangesList")
   ans <- integer(length(pos))
   ans[ord] <- as.vector(unlist(seqselect(cov, rl), use.names = FALSE))
