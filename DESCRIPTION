@@ -6,7 +6,7 @@ Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Tools for detecting, filtering, calling,
              comparing and plotting variants.
-Depends: IRanges (>= 1.19.19), GenomicRanges (>= 1.13.34),
+Depends: IRanges (>= 1.19.34), GenomicRanges (>= 1.13.43),
          VariantAnnotation (>= 1.7.35), methods
 Imports: IRanges, Rsamtools (>= 1.11.10), GenomicRanges, BiocGenerics, 
          Biostrings, parallel, gmapR (>= 1.3.8), GenomicFeatures,

@@ -122,7 +122,7 @@ extractCoverageForPositions <- function(cov, pos) {
   ord <- order(seqnames(pos))
   rl <- as(pos, "RangesList")
   ans <- integer(length(pos))
-  ans[ord] <- as.vector(unlist(seqselect(cov, rl), use.names = FALSE))
+  ans[ord] <- as.vector(unlist(cov[rl], use.names = FALSE))
   ans
 }
 
