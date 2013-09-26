@@ -26,12 +26,14 @@ findAverageNeighborCount <- function(x, max.dist = 50L,
   hits <- findOverlaps(x, windows)
   dist <- abs(start(neighbors)[subjectHits(hits)] - start(x)[queryHits(hits)])
   dist.counts <- twoWayTabulate(queryHits(hits), dist,
-                                queryLength(hits), max.dist) 
+                                queryLength(hits), max.dist)
   weights <- weighter(seq_len(ncol(dist.counts)))
   norm.weights <- weights / sum(weights)
   suppressMessages(dist.counts %*% matrix(norm.weights))[,1]
 }
 
+### FIXME: do we want to consider the alt here, i.e.,
+### should whitelist be a VRanges?
 AverageNeighborCountFilter <- function(max.nbor.count = 0.1, max.dist = 50L,
                                        weighter = function(d) 1/sqrt(d),
                                        whitelist = NULL)

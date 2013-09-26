@@ -120,9 +120,10 @@ extractCoverageForPositions <- function(cov, pos) {
     stop("Some ranges are of width > 1")
   seqlevels(pos) <- names(cov)
   ord <- order(seqnames(pos))
-  rl <- as(pos, "RangesList")
   ans <- integer(length(pos))
-  ans[ord] <- as.vector(unlist(cov[rl], use.names = FALSE))
+  ans[ord] <- unlist(mapply(function(v, p) {
+    runValue(v)[findRun(p, v)]
+  }, cov, split(start(pos), seqnames(pos)), SIMPLIFY=FALSE), use.names=FALSE)
   ans
 }
 
