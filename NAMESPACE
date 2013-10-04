@@ -7,7 +7,7 @@ importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
 importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
 importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno,
-           softFilter, altDepth, totalDepth, refDepth)
+           softFilter, altDepth, totalDepth, refDepth, tabulate)
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)

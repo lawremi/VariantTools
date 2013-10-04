@@ -4,25 +4,11 @@ file_ext_sans_gz <- function(x) {
   file_ext(x)
 }
 
-## HACK: just for ID verify to work with GATK output
-vcfToVariantGRanges <- function(from) {
-  from <- expand(from)
-  rd <- rowData(from)
-  ref <- rd$REF
-  alt <- rd$ALT
-  ad <- geno(from)$AD
-  ad.m <- matrix(unlist(ad), 2)
-  refDepth <- ad.m[1,]
-  GRanges(seqnames(rd), ranges(rd), "+", ref, alt, refDepth)
-}
-readVariantGRangesFromVCF <- function(x, ...) {
-  vcf <- readVcf(x, ...)
-  vcfToVariantGRanges(vcf)
-}
-
 loadVariants <- function(x, ...) {
-  if (file_ext_sans_gz(x) == "vcf")
-    readVariantGRangesFromVCF(x, ...)
+  if (file_ext_sans_gz(x) == "vcf") {
+    vcf <- readVcf(x, ...)
+    as(vcf, "VRanges")
+  }
   else get(load(x))
 }
 
@@ -57,10 +43,7 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
       }
     
       ## compute variant concordance
-      vc <- try(calculateVariantConcordance(avar, bvar))
-      if (class(vc) == "try-error") {
-        stop("error: variantConcordance() didn't return a value")
-      }
+      vc <- calculateVariantConcordance(avar, bvar)
 
       ## output results
       vcmat[i, i] <- 1

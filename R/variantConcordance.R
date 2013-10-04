@@ -31,8 +31,7 @@ calculateVariantConcordance <- function(gr1, gr2, which = NULL) {
 
 SingleVariantFilter <- function() {
   function(x) {
-    location <- Rle(x$location)
-    rep(width(location) == 1L, width(location))
+    tabulate(x)$sample.count == 1L
   }
 }
 
