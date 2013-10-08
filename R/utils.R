@@ -17,7 +17,7 @@ flankingCycleBreaks <- function(read_length, width = 10L) {
 }
 
 installed <- function(x) {
-  !is.na(suppressWarnings(packageDescription(x)))
+  !identical(suppressWarnings(packageDescription(x)), NA)
 }
 
 chunkRange <- function(which, n) {
