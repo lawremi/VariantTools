@@ -105,5 +105,5 @@ callVariantConcordance <- function(concordanceMatrix,
     edL[[i]] <- list(edges=indicesOfConnectedNodes)
   }
   gR <- graph::graphNEL(nodes=V, edgeL=edL)
-  RBGL::connectedComp(gR)
+  RBGL::maxClique(gR)$maxCliques
 }
