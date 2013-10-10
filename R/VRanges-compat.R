@@ -3,18 +3,27 @@
 ### Variant GRanges Compatibility
 ###
 
-variantGRanges2VRanges <- function(x) {
+makeVRangesFromVariantGRanges <- function(x, genome) {
   builtin.cols <- c("ref", "alt", "high.quality.ref", "high.quality",
                     "high.quality.total")
+  x <- rectifyDeletionRanges(x, genome)
   ans <- with(mcols(x),
               VRanges(seqnames(x), ranges(x), ref, alt, high.quality.total,
                       high.quality.ref, high.quality))
   mcols(ans) <- mcols(x)[setdiff(colnames(mcols(x)), builtin.cols)]
-  ans
+  gmapR:::normalizeIndelAlleles(ans, genome)
+}
+
+rectifyDeletionRanges <- function(x, genome) {
+  if (is.character(genome))
+    genome <- GmapGenome(genome)
+  del <- nchar(x$alt) == 0L
+  width(x)[del] <- nchar(x$ref)[del]
+  x
 }
 
 variantGRangesIsDeprecated <- function(old) {
-  .Deprecated("the VRanges class, see help(variantGRanges2VRanges)",
+  .Deprecated("the VRanges class, see help(makeVRangesFromVariantGRanges)",
               old = old)
 }
 

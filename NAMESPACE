@@ -7,7 +7,7 @@ importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
 importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
 importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno,
-           softFilter, altDepth, totalDepth, refDepth, tabulate)
+           softFilter, altDepth, totalDepth, refDepth, tabulate, VRanges)
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
@@ -27,6 +27,9 @@ export(callWildtype, minCallableCoverage, flankingCycleBreaks)
 
 ## some utilities
 export(matchVariants, "%variant_in%", extractCoverageForPositions)
+
+## compatibility
+export(makeVRangesFromVariantGRanges)
 
 ## API for next release
 ## export(checkVariantConcordance,
