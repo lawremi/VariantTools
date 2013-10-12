@@ -7,6 +7,7 @@ file_ext_sans_gz <- function(x) {
 loadVariants <- function(x, ...) {
   if (file_ext_sans_gz(x) == "vcf") {
     vcf <- readVcf(x, ...)
+    geno(vcf)$AD <- NULL
     as(vcf, "VRanges")
   }
   else get(load(x))
