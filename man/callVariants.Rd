@@ -3,15 +3,15 @@
 \alias{callVariants,BamFile-method}
 \alias{callVariants,character-method}
 \alias{callVariants,GenomicRanges-method}
+\alias{callVariants,VRanges-method}
 \alias{VariantCallingFilters}
 
 \title{
   Call Variants
 }
 \description{
-  Calls variants from either a BAM file or a tally \code{GRanges}
-  object. The variants are first filtered with \code{\link{qaVariants}},
-  and the remaining candidates are called using a binomial likelihood
+  Calls variants from either a BAM file or a \code{VRanges}
+  object. The variants are called using a binomial likelihood
   ratio test. Those calls are then subjected to a post-filtering step.
 }
 \usage{
@@ -20,7 +20,7 @@
                                  post.filters = FilterRules(),
                                  ...)
 \S4method{callVariants}{character}(x, ...)
-\S4method{callVariants}{GenomicRanges}(x,
+\S4method{callVariants}{VRanges}(x,
      calling.filters = VariantCallingFilters(...),
      post.filters = FilterRules(),
      ...)
@@ -30,7 +30,7 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 \arguments{
   \item{x}{
     Either a path to an indexed bam, a \code{BamFile}
-    object, or a \code{GRanges} as returned by \code{\link{tallyVariants}}. 
+    object, or a \code{VRanges} as returned by \code{\link{tallyVariants}}. 
   }
   \item{tally.param}{
     Parameters controlling the variant tallying step,
@@ -63,7 +63,7 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   }
 }
 \details{
-  After QA filtering, there are two remaining steps for calling
+  There are two steps for calling
   variants: the actual statistical test that decides whether a variant
   exists in the data, and a post-filtering step. By default, the initial
   calling is based on a binomial likelihood ratio test
@@ -77,13 +77,12 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   \code{max.nbor.count} parameter).
 }
 \value{
-  For \code{callVariants}, a \code{GRanges} of the called variants (the
-  tallies that pass the QA and calling filters). See the documentation
+  For \code{callVariants}, a \code{VRanges} of the called variants (the
+  tallies that pass the calling filters). See the documentation
   of \code{\link[gmapR]{bam_tally}} for complete details.
   
   For \code{VariantCallingFilters}, a \code{\link[IRanges]{FilterRules}}
-  object with the filters for calling the variants (presumably after the
-  QA filters have been applied).
+  object with the filters for calling the variants.
 }
 \author{
   Michael Lawrence, Jeremiah Degenhardt

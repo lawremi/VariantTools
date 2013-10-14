@@ -11,7 +11,7 @@
 }
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
-VariantQAFilters(read.pos.count = 1L, fisher.strand.p.value = 1e-4,
+VariantQAFilters(read.pos.count = 2L, fisher.strand.p.value = 1e-4,
                  read.pos.p.value = 1e-4)
 }
 

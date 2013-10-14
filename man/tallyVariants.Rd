@@ -3,6 +3,7 @@
 \alias{tallyVariants,character-method}
 \alias{tallyVariants,BamFile-method}
 \alias{VariantTallyParam}
+\alias{TallyVariantsParam}
 
 \title{
   Tally the positions in a BAM file
@@ -16,10 +17,22 @@
   \code{high_base_quality} cutoff. Passing a \code{which} argument
   allows computing on only a subregion of the genome.
 }
+\note{
+  The \code{VariantTallyParam} constructor is \strong{DEPRECATED}.
+}
 \usage{
-\S4method{tallyVariants}{BamFile}(x, param = VariantTallyParam(...), ...,
+\S4method{tallyVariants}{BamFile}(x, param = TallyVariantsParam(...), ...,
                                   BPPARAM = defaultBPPARAM())
 \S4method{tallyVariants}{character}(x, ...)
+TallyVariantsParam(genome,
+                   read_pos_breaks = NULL,
+                   high_base_quality = 0L,
+                   minimum_mapq = 13L,
+                   variant_strand = 1L, ignore_query_Ns = TRUE,
+                   ignore_duplicates = TRUE,
+                   mask = GRanges(), keep_extra_stats = TRUE,
+                   ...)
+## DEPRECATED:
 VariantTallyParam(genome, readlen = NA,
                   read_pos_flank_width = 10L,
                   read_pos_breaks = flankingCycleBreaks(readlen,
@@ -48,7 +61,7 @@ VariantTallyParam(genome, readlen = NA,
   \item{genome}{The genome, either a \code{\link[gmapR]{GmapGenome}} or
     something coercible to one.
   }
-  \item{readlen, read_pos_flank_width}{
+  \item{readlen, read_pos_flank_width}{ \strong{DEPRECATED}.
     If \code{read_pos_breaks} is missing, these two arguments are used to
     generate a \code{read_pos_breaks} for three bins, with the two outside
     bins having \code{read_pos_flank_width}. If \code{readlen} is
@@ -83,6 +96,14 @@ VariantTallyParam(genome, readlen = NA,
   }
   \item{ignore_duplicates}{whether to ignore reads flagged as
     PCR/optical duplicates}
+  \item{mask}{A \code{GRanges} specifyin a mask; all variants falling
+    within the mask are discarded.
+  }
+  \item{keep_extra_stats}{Whether to keep various summary statistics
+    generated from the tallies; setting this to FALSE will save memory.
+    The extra statistics are most useful for algorithm diagnostics and
+    development. 
+  }
   \item{BPPARAM}{A
     \code{\link[BiocParallel:BiocParallelParam-class]{BiocParallelParam}}
     object specifying the resources and strategy for parallelizing the
