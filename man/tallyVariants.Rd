@@ -2,6 +2,7 @@
 \alias{tallyVariants}
 \alias{tallyVariants,character-method}
 \alias{tallyVariants,BamFile-method}
+\alias{tallyVariants,BamFileList-method}
 \alias{VariantTallyParam}
 \alias{TallyVariantsParam}
 
@@ -23,6 +24,7 @@
 \usage{
 \S4method{tallyVariants}{BamFile}(x, param = TallyVariantsParam(...), ...,
                                   BPPARAM = defaultBPPARAM())
+\S4method{tallyVariants}{BamFileList}(x, ...)
 \S4method{tallyVariants}{character}(x, ...)
 TallyVariantsParam(genome,
                    read_pos_breaks = NULL,
@@ -45,7 +47,11 @@ VariantTallyParam(genome, readlen = NA,
 }
 \arguments{
   \item{x}{
-    An indexed BAM file, either a path or a \code{BamFile} object.
+    An indexed BAM file, either a path, \code{BamFile} or
+    \code{BamFileList} object. If the latter, the tallies are computed
+    separately for each file, and the results are stacked with
+    \code{\link[VariantAnnotation]{stackSamples}} into a single
+    \code{VRanges}.
   }
   \item{param}{
     The parameters for the tallying process, as a
