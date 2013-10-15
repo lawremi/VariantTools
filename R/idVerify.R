@@ -7,7 +7,7 @@ file_ext_sans_gz <- function(x) {
 loadVariants <- function(x, ...) {
   if (file_ext_sans_gz(x) == "vcf") {
     vcf <- readVcf(x, ...)
-    geno(vcf)$AD <- NULL
+    geno(vcf)$DP <- NULL
     as(vcf, "VRanges")
   }
   else get(load(x))
@@ -40,7 +40,7 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
         loadVariants(variantFiles[j], ...)
       }, silent=TRUE)
       if (class(bvar) == "try-error") {
-        stop("error: cannot load '", variantFiles[j], "': ", avar)
+        stop("error: cannot load '", variantFiles[j], "': ", bvar)
       }
     
       ## compute variant concordance

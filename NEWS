@@ -1,3 +1,44 @@
+CHANGES IN VERSION 1.4
+-----------------------
+
+NEW FEATURES
+
+    o tallyVariants will now keep ref rows if variant_strand=0; this
+      is useful for getting information when no alts are present
+      (e.g., for making wildtype calls). Better have a big cluster to
+      do this over the whole genome.
+
+    o add a keep_extra_stats param to TallyVariantsParam; setting this to
+      FALSE will speed things up when the extra stats are not needed.
+
+    o idVerify now supports VCF input like that output by GATK.
+
+    o callableFraction() now supports GRangesList and TranscriptDb.
+    
+USER-VISIBLE CHANGES
+
+    o The API is now based on VRanges, a formal GRanges-derived class
+      for representing variants; use of so-called "tally" or "variant"
+      GRanges is deprecated.
+
+    o Disable proximity filter by default;
+      we recommend this now only for whole genome calling.
+
+    o QA filtering is no longer a formal part of the calling pipeline;
+      we recommend to apply QA filters "softly" via qaVariants() and use
+      the results for diagnostics only.
+
+    o Use BiocParallel (BPPARAM argument) for tallyVariants
+
+    o VariantTallyParam deprecated; use TallyVariantsParam
+    
+BUG FIXES
+
+    o idVerify now correctly computes cliques instead of connected components
+
+    o use the total count, rather than the ref count when calculating
+      the alt frequency
+
 CHANGES IN VERSION 1.2.0
 -----------------------
 

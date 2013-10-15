@@ -1,3 +1,4 @@
+import(methods)
 import(BiocGenerics)
 import(IRanges)
 import(GenomicRanges)
@@ -6,8 +7,10 @@ importFrom(Biostrings, DNAStringSet, detail)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
 importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
-importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno,
-           softFilter, altDepth, totalDepth, refDepth, tabulate, VRanges)
+importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno, 
+           softFilter, altDepth, totalDepth, refDepth, tabulate, VRanges,
+           header, "geno<-" # for the idVerify AD<-NULL hack
+           )
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
@@ -23,7 +26,7 @@ export(variantGR2Vcf)
 
 export(callSampleSpecificVariants, SampleSpecificVariantFilters)
 
-export(callWildtype, minCallableCoverage, flankingCycleBreaks)
+export(callWildtype, minCallableCoverage)
 
 ## some utilities
 export(matchVariants, "%variant_in%", extractCoverageForPositions)
