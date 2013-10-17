@@ -3,6 +3,7 @@
 \alias{callSampleSpecificVariants,BamFile,BamFile-method}
 \alias{callSampleSpecificVariants,character,character-method}
 \alias{callSampleSpecificVariants,GenomicRanges,GenomicRanges-method}
+\alias{callSampleSpecificVariants,VRanges,VRanges-method}
 \alias{SampleSpecificVariantFilters}
 
 \title{Call Sample-Specific Variants}
@@ -16,17 +17,20 @@
 \S4method{callSampleSpecificVariants}{BamFile,BamFile}(case, control,
   tally.param, ...)
 \S4method{callSampleSpecificVariants}{character,character}(case, control, ...)
+SampleSpecificVariantFilters(control, control.cov, calling.filters,
+                             power = 0.8, p.value = 0.01)
+\S4method{callSampleSpecificVariants}{VRanges,VRanges}(case,
+  control, control.cov, ...)
+## DEPRECATED
 \S4method{callSampleSpecificVariants}{GenomicRanges,GenomicRanges}(case,
   control, control.cov,
   calling.filters = VariantCallingFilters(), post.filters =
   FilterRules(), ...)
-SampleSpecificVariantFilters(control, control.cov, calling.filters,
-                             power = 0.8, p.value = 0.01)
 }
 \arguments{
   \item{case}{
-    The BAM file for the case, or the raw tallies as output by
-    \code{\link{tallyVariants}}.
+    The BAM file for the case, or the called variants as output by
+    \code{\link{callVariants}}.
   }
   \item{control}{
     The BAM file for the control, or the raw tallies as output by

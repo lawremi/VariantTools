@@ -62,6 +62,7 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
                    post.filters = FilterRules(),
                    ...)
           {
+            variantGRangesIsDeprecated("callSampleSpecificVariants")
             case.called <- callVariants(case, calling.filters, post.filters)
             filters <- SampleSpecificVariantFilters(control,
                                                     control.cov,
@@ -71,15 +72,31 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
             annotateWithControlCounts(case.specific, control, control.cov)
           })
 
+setMethod("callSampleSpecificVariants", c("VRanges", "VRanges"),
+          function(case, control, control.cov, ...)
+          {
+            filters <- SampleSpecificVariantFilters(control,
+                                                    control.cov,
+                                                    hardFilters(case),
+                                                    ...)
+            case.specific <- subsetByFilter(case, filters)
+            annotateWithControlCounts(case.specific, control, control.cov)
+          })
+
 setMethod("callSampleSpecificVariants", c("BamFile", "BamFile"),
-          function(case, control, tally.param, ...)
+          function(case, control, tally.param,
+                   calling.filters = VariantCallingFilters(),
+                   post.filters = FilterRules(),
+                   ...)
           {
             case.raw <- tallyVariants(case, tally.param)
-            control.raw <- tallyVariants(control, tally.param)
+            case.called <- callVariants(case.raw, calling.filters, post.filters)
 
+            control.raw <- tallyVariants(control, tally.param)
             control.cov <- coverage(control, drop.D.ranges = TRUE)
 
-            callSampleSpecificVariants(case.raw, control.raw, control.cov, ...)
+            callSampleSpecificVariants(case.called, control.raw, control.cov,
+                                       ...)
           })
 
 setMethod("callSampleSpecificVariants", c("character", "character"),
