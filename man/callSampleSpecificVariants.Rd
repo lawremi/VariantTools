@@ -104,7 +104,7 @@ SampleSpecificVariantFilters(control, control.cov, calling.filters,
   }
 }
 \value{
-  A tally \code{GRanges} with the case-specific variants (such as
+  A \code{VRanges} with the case-specific variants (such as
   somatic mutations).
 }
 \author{
