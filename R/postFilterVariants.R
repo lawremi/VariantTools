@@ -3,6 +3,8 @@
 ### -------------------------------------------------------------------------
 
 postFilterVariants <- function(x, post.filters = VariantPostFilters(...), ...) {
+  if (!missing(post.filters) && length(list(...)) > 0L)
+    stop("arguments in '...' were ignored, because 'post.filters' was given")
   subsetByFilter(x, post.filters)
 }
 
