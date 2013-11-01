@@ -62,8 +62,10 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
                    post.filters = FilterRules(),
                    ...)
           {
-            variantGRangesIsDeprecated("callSampleSpecificVariants")
+            stop("callSampleSpecificVariants no longer supports variant ",
+                 "GRanges: please use VRanges instead")
             case.called <- callVariants(case, calling.filters, post.filters)
+            control <- makeVRangesFromVariantGRanges(control, genome(control))
             filters <- SampleSpecificVariantFilters(control,
                                                     control.cov,
                                                     calling.filters,
@@ -120,7 +122,7 @@ SampleSpecificVariantFilters <-
 
 SetdiffVariantsFilter <- function(other) {
   function(x) {
-    !(x %variant_in% other)
+    !(x %in% other)
   }
 }
 
@@ -164,8 +166,8 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
 LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 {
   function(x) {
-    x.freq <- altDepth(x) / totalDepth(x)
-    m <- match(variantKeys(x), variantKeys(other))
+    x.freq <- altFraction(x)
+    m <- match(x, other)
     other.alt <- rep.int(0L, length(x))
     other.alt[!is.na(m)] <- rawAltDepth(other)[m[!is.na(m)]]
     other.total <- extractCoverageForPositions(other.cov, x)
@@ -175,7 +177,7 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 }
 
 annotateWithControlCounts <- function(case.specific, control, control.cov) {
-  m <- matchVariants(case.specific, control)
+  m <- match(case.specific, control)
   control.count <- altDepth(control)[m]
   control.count[is.na(control.count)] <- 0L
   control.count.total <- totalDepth(control)[m]

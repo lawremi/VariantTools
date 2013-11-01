@@ -6,6 +6,8 @@
   Match variants by position and allele
 }
 \description{
+  These are \strong{deprecated} functions for operating on the old
+  variant GRanges. New code should use \code{match} and \code{\%in\%}.
   This function behaves like \code{match}, where two elements match when
   they share the same position and \dQuote{alt} allele.
 }
