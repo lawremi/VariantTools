@@ -156,7 +156,7 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
   if (is.null(rc.filter))
     stop("'readCount' filter not found in 'calling.filters'")
   function(x) {
-    other.n <- extractCoverageForPositions(other.cov, x)
+    other.n <- extractCoverageForPositions(other.cov, resize(x, 1))
     f <- lrtFreqCutoff(lr.params$p.error, lr.params$p.lower)
     min.count <- round(pmax(params(rc.filter)$min.count, other.n * f))
     1 - pbinom(min.count, other.n, lr.params$p.lower) > power
@@ -170,7 +170,7 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
     m <- match(x, other)
     other.alt <- rep.int(0L, length(x))
     other.alt[!is.na(m)] <- rawAltDepth(other)[m[!is.na(m)]]
-    other.total <- extractCoverageForPositions(other.cov, x)
+    other.total <- extractCoverageForPositions(other.cov, resize(x, 1))
     p <- pbinom(other.alt, other.total, x.freq)
     p < p.value
   }
@@ -182,7 +182,7 @@ annotateWithControlCounts <- function(case.specific, control, control.cov) {
   control.count[is.na(control.count)] <- 0L
   control.count.total <- totalDepth(control)[m]
   control.count.total[is.na(m)] <-
-    extractCoverageForPositions(control.cov, case.specific[is.na(m)])
+    extractCoverageForPositions(control.cov, resize(case.specific[is.na(m)], 1))
   case.specific$control.count <- control.count
   case.specific$control.count.total <- control.count.total
   case.specific
