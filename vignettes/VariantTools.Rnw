@@ -65,12 +65,12 @@ metastatis and H2073 is derived from the primary tumor.
 Below, we call variants from a region around the p53 gene:
 <<callVariants>>=
 library(VariantTools)
-p53 <- gmapR:::exonsOnTP53Genome("TP53") + 1e5
+p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
 tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
                                   high_base_quality = 23L,
-                                  which = range(p53),
+                                  which = range(p53) + 5e4,
                                   indels = TRUE)
 called.variants <- callVariants(bam, tally.param)
 @ %$
@@ -96,9 +96,14 @@ because it has a separate record for each ALT, at each position.
 position, collapsing over multiple ALT alleles, and this is much less
 convenient for our purposes. 
 
-If we subset the variants by those in an actual p53 exon (not an
-intron), we find two: one with strong evidence for a homozygous
-mutation, and another with much weaker evidence (low coverage).
+We can post-filter the variants for those that are clustered too
+closely on the genome:
+<<callVariants-postFilter>>=
+pf.variants <- postFilterVariants(called.variants)
+@
+
+We can subset the variants by those in an actual p53 exon (not an
+intron):
 <<callVariants-exonic>>=
 subsetByOverlaps(called.variants, p53, ignore.strand = TRUE)
 @ 
@@ -129,7 +134,7 @@ score. There are three read position bins: the first 10 bases, the final 10
 bases, and the stretch between them (these will be used in the QA
 step).
 <<tallyVariants>>=
-raw.variants <- tallyVariants(bam, tally.param, mc.cores=1)
+raw.variants <- tallyVariants(bam, tally.param)
 @ 
 
 Unless one is running a variant caller in a routine fashion over
