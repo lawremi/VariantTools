@@ -33,7 +33,7 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
 
 setMethod("callCallable", "BigWigFile", function(x, pos = NULL, ...) {
-  rd <- import(x, which = pos, asRangedData = FALSE)
+  rd <- import(x, which = pos, asRle=TRUE)
   callCallable(coverage(rd, weight = "score"), pos = pos, ...)
 })
 
