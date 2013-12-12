@@ -59,6 +59,8 @@ setMethod("callCallable", "ANY", function(x, ...) {
   callCallable(cov, ...)
 })
 
+# FIXME: instead of 'pos' have a 'which' and a logical byPos argument
+# That way, people can iterate over partitions
 callWildtype <- function(reads, variants, calling.filters, pos = NULL,
                          ...)
 {

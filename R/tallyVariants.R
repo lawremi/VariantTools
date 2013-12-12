@@ -2,6 +2,13 @@
 ### Tallying Alignments for Variant Calling
 ### -------------------------------------------------------------------------
 
+### Thoughts on a tally abstraction:
+###
+### Want to support both bam_tally and applyPileups. Ideally, there
+### would be one generic called tallyVariants(). We could dispatch on
+### the parameter object, with a BamTallyVariantsParam() and a
+### PileupTallyVariantsParam().
+
 setGeneric("tallyVariants", function(x, ...) standardGeneric("tallyVariants"))
 
 defaultBPPARAM <- function() registered()[[1]]
