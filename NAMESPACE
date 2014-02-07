@@ -30,6 +30,7 @@ export(callWildtype, minCallableCoverage)
 
 ## some utilities
 export(matchVariants, "%variant_in%", extractCoverageForPositions)
+export(pileupVariants)
 
 ## compatibility
 export(makeVRangesFromVariantGRanges)
