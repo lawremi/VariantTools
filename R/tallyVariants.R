@@ -7,7 +7,7 @@
 ### Want to support both bam_tally and applyPileups. Ideally, there
 ### would be one generic called tallyVariants(). We could dispatch on
 ### the parameter object, with a BamTallyVariantsParam() and a
-### PileupTallyVariantsParam().
+### PileupTallyVariantsParam(). 
 
 setGeneric("tallyVariants", function(x, ...) standardGeneric("tallyVariants"))
 
@@ -22,7 +22,9 @@ setMethod("tallyVariants", "BamFile",
               iit <- bam_tally(x, param@bamTallyParam, which = which)
               ans <- variantSummary(iit, param@read_pos_breaks,
                                     param@high_base_quality,
-                                    param@bamTallyParam@variant_strand == 0L)
+                                    param@bamTallyParam@variant_strand == 0L,
+                                    param@read_length)
+              ##ans <- subsetByOverlaps(ans, which) needed?
               if (!param@keep_extra_stats)
                 mcols(ans) <- NULL
               ans[!(ans %over% param@mask)]
@@ -50,7 +52,8 @@ setClass("TallyVariantsParam",
                         read_pos_breaks = "integer",
                         high_base_quality = "integer",
                         mask = "GenomicRanges",
-                        keep_extra_stats = "logical"))
+                        keep_extra_stats = "logical",
+                        read_length = "integer"))
 
 TallyVariantsParam <- function(genome,
                                read_pos_breaks = NULL,
@@ -61,6 +64,7 @@ TallyVariantsParam <- function(genome,
                                ignore_duplicates = TRUE,
                                mask = GRanges(),
                                keep_extra_stats = TRUE,
+                               read_length = NA_integer_,
                                ...)
 {
   if (!isSingleNumber(variant_strand) || !(variant_strand %in% c(0, 1, 2)))
@@ -77,7 +81,8 @@ TallyVariantsParam <- function(genome,
   new("TallyVariantsParam", bamTallyParam = bam.tally.param,
       read_pos_breaks = as.integer(read_pos_breaks),
       high_base_quality = as.integer(high_base_quality),
-      mask = mask, keep_extra_stats = as.logical(keep_extra_stats))
+      mask = mask, keep_extra_stats = as.logical(keep_extra_stats),
+      read_length = read_length)
 }
 
 VariantTallyParam <- function(genome,

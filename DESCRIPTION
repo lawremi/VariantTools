@@ -1,7 +1,7 @@
 Package: VariantTools
 Type: Package
 Title: Tools for Working with Genetic Variants
-Version: 1.5.4
+Version: 1.5.5
 Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Tools for detecting, filtering, calling,
@@ -9,7 +9,7 @@ Description: Tools for detecting, filtering, calling,
 Depends: IRanges (>= 1.19.34), GenomicRanges (>= 1.13.43),
          VariantAnnotation (>= 1.7.35), methods
 Imports: Rsamtools (>= 1.11.10), BiocGenerics, 
-         Biostrings, parallel, gmapR (>= 1.3.8), GenomicFeatures,
+         Biostrings, parallel, gmapR (>= 1.5.6), GenomicFeatures,
          Matrix, rtracklayer, BiocParallel
 Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph
 biocViews: Genetics, GeneticVariability, HighThroughputSequencing
