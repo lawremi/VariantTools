@@ -11,8 +11,7 @@
 }
 \usage{
 qaVariants(x, qa.filters = VariantQAFilters(...), ...)
-VariantQAFilters(read.pos.count = 2L, fisher.strand.p.value = 1e-4,
-                 read.pos.p.value = 1e-4)
+VariantQAFilters(fisher.strand.p.value = 1e-4, min.mdfne = 10L)
 }
 
 \arguments{
@@ -26,43 +25,24 @@ VariantQAFilters(read.pos.count = 2L, fisher.strand.p.value = 1e-4,
   \item{\dots}{
     Arguments passed to \code{VariantQAFilters}, listed below.
   }
-  \item{read.pos.count}{Minimum number of unique read positions for the
-    alternate base.
-  }
   \item{fisher.strand.p.value}{p-value cutoff for the Fisher's Exact Test for
     strand bias (+/- counts, alt vs. ref). Any variants with p-values
     below this cutoff are discarded.
   }
-  \item{read.pos.p.value}{
-    p-value cutoff for the read position t-test
-    between the variant and reference calls
+  \item{min.mdfne}{Minimum allowed median distance of alt calls from
+    their nearest end of the read.
   }
 }
 \details{
-  There are currently three QA filters:
+  There are currently two QA filters:
   \itemize{
-    \item{Alternate base was read at a minimum (1) number of unique
-      read positions. We recommend setting this to 2 or more if
-      duplicate alignments have not been filtered during tallying. 
+    \item{Median distance of alt calls from nearest end of the read is
+      required to be >= \code{min.mdfne}, which defaults to 10.
     }
     \item{Fisher's Exact Test for strand bias, using the +/- counts, alt
       vs. ref. If the null is rejected, the variant is discarded.
     }
-    \item{If the tallies contain read position bin counts, the variant must have
-      at least one count in the middle bins
-      (those not at the start or end). We trust the internal read positions more.
-    }
-    \item{Read position t-test comparing the mean read position for the
-      reference and alt reads. Any imbalance probably indicates mapping
-      issues. 
-    }
-    \item{Mask of blacklisted positions, such as simple repeats, low
-      complexity regions, i.e., uninteresting, problematic regions.
-    }
   }
-  
-  Prior to the QA checks, the variants are passed through a simple
-  sanity filter that discards positions where reference has an N.
 }
 \value{
   For \code{qaVariants}, a tally \code{GRanges} of the variants that

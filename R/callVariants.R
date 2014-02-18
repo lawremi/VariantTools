@@ -14,6 +14,10 @@ setMethod("callVariants", "BamFile",
                    post.filters = FilterRules(),
                    ...)
           {
+            if (!missing(calling.filters) && length(list(...)) > 0L) {
+              warning("ignored arguments: ",
+                      paste(names(list(...)), collapse=", "))
+            }
             raw_variants <- tallyVariants(x, tally.param)
             callVariants(raw_variants, calling.filters, post.filters)
           })

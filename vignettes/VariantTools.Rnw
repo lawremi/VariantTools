@@ -72,7 +72,8 @@ tally.param <- TallyVariantsParam(gmapR::TP53Genome(),
                                   high_base_quality = 23L,
                                   which = range(p53) + 5e4,
                                   indels = TRUE, read_length = 75L)
-called.variants <- tallyVariants(bam, tally.param)
+called.variants <- tallyVariants(bam, tally.param, 
+                                 BPPARAM=SerialParam(catch.errors=FALSE))
 @ %$
 %
 In the above, we load the genome corresponding to the human p53 gene
@@ -143,13 +144,12 @@ the tally results. \Rpackage{VariantTools} provides several QA filters
 that aim to expose artifacts, especially those generated during
 alignment. These filters are \emph{not} designed for filtering during
 actual calling; rather, they are meant for annotating the variants
-during exploratory analysis. The filters include a minimum read count
-(2) check, minimum unique read position count (2) check, and Fisher Exact Test
-on the per-strand counts vs. reference for strand bias (p-value
-cutoff: 0.001). If there are at least three read position bins in the tallies,
-at least one read must present the variant in an internal read position
-bin. The intent is to ensure that we have sufficient data and that the
-data are not due to strand-specific nor read position-specific artifacts.
+during exploratory analysis. The filters include a check on the median
+distance of alt calls from their nearest end of the read (default
+passing cutoff >= 10), as well as a Fisher Exact Test on the
+per-strand counts vs. reference for strand bias (p-value cutoff:
+0.001). The intent is to ensure that the data are not due to
+strand-specific nor read position-specific artifacts.
 
 The \Rfunction{qaVariants} function will \emph{soft} filter the
 variants via \Rfunction{softFilter}. No variants are removed; the
@@ -157,7 +157,7 @@ filter results are added to the \Rfunction{softFilterMatrix} component
 of the object.
 <<qaVariants>>=
 qa.variants <- qaVariants(raw.variants)
-head(softFilterMatrix(qa.variants))
+summary(softFilterMatrix(qa.variants))
 @ 
 
 The final step is to actually call the variants. The

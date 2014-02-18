@@ -7,13 +7,10 @@ qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
   softFilter(x, qa.filters)
 }
 
-VariantQAFilters <- function(read.pos.count = 2L, fisher.strand.p.value = 1e-4,
-                             read.pos.p.value = 1e-4)
+VariantQAFilters <- function(fisher.strand.p.value = 1e-4, min.mdfne = 10L)
 {
-  FilterRules(c(readPosCount = ReadPosCountFilter(read.pos.count),
-                fisherStrand = FisherStrandFilter(fisher.strand.p.value),
-                readPosBin = InternalReadPosBinFilter(),
-                readPosTTest = ReadPositionTTestFilter(read.pos.p.value)))
+  FilterRules(c(mdfne = MedianDistFromNearestEndFilter(min.mdfne),
+                fisherStrand = FisherStrandFilter(fisher.strand.p.value)))
 }
 
 ## With new gmapR, this is only necessary for filtering the ref N's.
@@ -99,5 +96,11 @@ IndelsNotSupportedFilter <- function() {
 MaskFilter <- function(mask) {
   function(x) {
     !overlapsAny(x, mask, ignore.strand = TRUE)
+  }
+}
+
+MedianDistFromNearestEndFilter <- function(min.mdfne) {
+  function(x) {
+    x$mdfne >= min.mdfne
   }
 }
