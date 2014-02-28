@@ -72,7 +72,7 @@ tally.param <- TallyVariantsParam(gmapR::TP53Genome(),
                                   high_base_quality = 23L,
                                   which = range(p53) + 5e4,
                                   indels = TRUE, read_length = 75L)
-called.variants <- tallyVariants(bam, tally.param)
+called.variants <- callVariants(bam, tally.param)
 @ %$
 %
 In the above, we load the genome corresponding to the human p53 gene
