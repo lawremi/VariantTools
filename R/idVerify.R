@@ -1,6 +1,6 @@
 ## TODO: use dispatch on special file classes
 file_ext_sans_gz <- function(x) {
-  x <- sub("[.]gz$", "", x)
+  x <- sub("[.]b?gz$", "", x)
   file_ext(x)
 }
 
