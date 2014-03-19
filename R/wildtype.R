@@ -33,7 +33,8 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
 setGeneric("callCallable", function(x, ...) standardGeneric("callCallable"))
 
 setMethod("callCallable", "BigWigFile", function(x, pos = NULL, ...) {
-  rle <- import(x, which = pos, asRle=TRUE)
+  which <- if (is.null(pos)) seqinfo(x) else pos
+  rle <- import(x, which = which, as="RleList")
   callCallable(rle, pos = pos, ...)
 })
 
