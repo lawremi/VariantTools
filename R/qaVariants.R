@@ -38,10 +38,10 @@ ReadPosCountFilter <- function(read.pos.count = 1L) {
 FisherStrandFilter <- function(p.value = 1e-4) {
   function(x) {
     p <- with(mcols(x),
-              fisher_p_vectorized(count.pos.ref,
-                                  count.neg.ref,
-                                  (count.pos.ref + count.pos),
-                                  (count.neg.ref + count.neg)))
+              fisher_p_vectorized(count.plus.ref,
+                                  count.minus.ref,
+                                  (count.plus.ref + count.plus),
+                                  (count.minus.ref + count.minus)))
     p > p.value
   }
 }
