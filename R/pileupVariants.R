@@ -36,9 +36,7 @@ pileupVariants <- function(bams, genome, param = PileupParam(),
                   refDepth = Rle(tally[is.ref], per.samp.pos),
                   totalDepth = Rle(colSums(tally), per.samp.pos),
                   sampleNames = sampleNames)
-    if (dropZeros) {
-      vr <- vr[altDepth(vr) >= minAltDepth]
-    }
+    vr <- vr[altDepth(vr) >= minAltDepth]
     if (baseOnly) {
       vr <- vr[ref(vr) != "N" & alt(vr) != "N"]
     }
