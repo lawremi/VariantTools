@@ -14,6 +14,7 @@ importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno,
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
+importFrom(GenomeInfoDb, seqlevelsStyle, "seqlevelsStyle<-")
 importFrom(tools, file_ext)
 importFrom(BiocParallel, bpvec, registered, bplapply)
 

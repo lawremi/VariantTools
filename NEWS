@@ -1,4 +1,19 @@
-CHANGES IN VERSION 1.4
+CHANGES IN VERSION 1.6.0
+-----------------------
+
+NEW FEATURES
+
+    o Add pileupVariants function as an alternative to tallyVariants
+      for computing nucleotide pileups using Rsamtools, instead of
+      gmapR. In the future, this should allow VariantTools to become
+      independent of gmapR, but the full variant statistics will only
+      be available via tallyVariants.
+    
+USER-VISIBLE CHANGES
+
+    o See the NEWS for gmapR to learn about changes to tallyVariants output.
+
+CHANGES IN VERSION 1.4.0
 -----------------------
 
 NEW FEATURES

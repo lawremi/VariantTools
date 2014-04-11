@@ -10,7 +10,7 @@ Depends: IRanges (>= 1.19.34), GenomicRanges (>= 1.13.43),
         VariantAnnotation (>= 1.7.35), methods
 Imports: Rsamtools (>= 1.11.10), BiocGenerics, Biostrings, parallel,
         gmapR (>= 1.5.15), GenomicFeatures, Matrix, rtracklayer,
-        BiocParallel
+        BiocParallel, GenomeInfoDb
 Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph
 License: Artistic-2.0
 LazyLoad: yes

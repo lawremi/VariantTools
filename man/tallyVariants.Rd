@@ -33,6 +33,7 @@ TallyVariantsParam(genome,
                    variant_strand = 1L, ignore_query_Ns = TRUE,
                    ignore_duplicates = TRUE,
                    mask = GRanges(), keep_extra_stats = TRUE,
+                   read_length = NA_integer_,
                    ...)
 ## DEPRECATED:
 VariantTallyParam(genome, readlen = NA,
@@ -104,6 +105,12 @@ VariantTallyParam(genome, readlen = NA,
     PCR/optical duplicates}
   \item{mask}{A \code{GRanges} specifyin a mask; all variants falling
     within the mask are discarded.
+  }
+  \item{read_length}{The expected read length, used for calculating the
+    \dQuote{median distance from nearest} end statistic. If not
+    specified, an attempt is made to guess the read length from a random
+    sample of the BAM file. If read length is found to be variable,
+    statistics depending on the read length are not calculated.
   }
   \item{keep_extra_stats}{Whether to keep various summary statistics
     generated from the tallies; setting this to FALSE will save memory.

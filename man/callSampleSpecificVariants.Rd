@@ -17,7 +17,8 @@
 SampleSpecificVariantFilters(control, control.cov, calling.filters,
                              power = 0.8, p.value = 0.01)
 \S4method{callSampleSpecificVariants}{BamFile,BamFile}(case, control,
-  tally.param, ...)
+  tally.param, calling.filters = VariantCallingFilters(), post.filters =
+  FilterRules(), ...)
 \S4method{callSampleSpecificVariants}{character,character}(case, control, ...)
 \S4method{callSampleSpecificVariants}{VRanges,VRanges}(case,
   control, control.cov, ...)
