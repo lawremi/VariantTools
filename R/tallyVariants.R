@@ -17,24 +17,27 @@ setMethod("tallyVariants", "BamFile",
           function(x, param = TallyVariantsParam(...), ...,
                    BPPARAM = defaultBPPARAM())
           {
-            tally_region <- function(x, ind, param) {
-              which <- which[ind]
+            tally_region <- function(x, which, param) {
               iit <- bam_tally(x, param@bamTallyParam, which = which)
               ans <- variantSummary(iit, param@read_pos_breaks,
                                     param@high_base_quality,
                                     param@bamTallyParam@variant_strand == 0L,
                                     param@read_length)
-              ##ans <- subsetByOverlaps(ans, which) needed?
+              ## usage of start() is intential to avoid dropping indels
+              ## that extend outside of window
+              ans <- ans[start(ans) >= start(which) & start(ans) <= end(which)]
               if (!param@keep_extra_stats)
                 mcols(ans) <- NULL
               ans[!(ans %over% param@mask)]
             }
             which <- param@bamTallyParam@which
             if (length(which) == 0L) {
-              which <- as(seqinfo(param@bamTallyParam@genome), "GenomicRanges")
+              which <- tileGenome(seqlengths(param@bamTallyParam@genome),
+                                  bpworkers(BPPARAM))
+              which <- unlist(which, use.names=FALSE)
             }
-            ind <- seq_len(length(which))
-            ans <- bplapply(ind, tally_region, x = x, param = param,
+            which <- as.list(which)
+            ans <- bplapply(which, tally_region, x = x, param = param,
                             BPPARAM = BPPARAM)
             do.call(c, unname(ans))
           })

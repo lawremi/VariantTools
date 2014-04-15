@@ -16,7 +16,7 @@ importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
 importFrom(GenomeInfoDb, seqlevelsStyle, "seqlevelsStyle<-")
 importFrom(tools, file_ext)
-importFrom(BiocParallel, bpvec, registered, bplapply)
+importFrom(BiocParallel, bpvec, registered, bplapply, bpworkers)
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,
