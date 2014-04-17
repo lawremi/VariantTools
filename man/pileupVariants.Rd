@@ -12,7 +12,7 @@
   statistics (none beyond the fixed columns) available in the output.
 }
 \usage{
-pileupVariants(bams, genome, param = PileupParam(), minAltDepth = 1L,
+pileupVariants(bams, genome, param = ApplyPileupsParam(), minAltDepth = 1L,
                baseOnly = TRUE, BPPARAM = defaultBPPARAM())
 }
 \arguments{
@@ -25,7 +25,7 @@ pileupVariants(bams, genome, param = PileupParam(), minAltDepth = 1L,
     \code{\link[Biostrings]{getSeq}}.
   }
   \item{param}{
-    A \code{\link[Rsamtools]{PileupParam}} object that specifies the
+    A \code{\link[Rsamtools]{ApplyPileupsParam}} object that specifies the
     mode of iteration and various filters.
   }
   \item{minAltDepth}{
@@ -51,6 +51,6 @@ pileupVariants(bams, genome, param = PileupParam(), minAltDepth = 1L,
 }
 \examples{
      bams <- LungCancerLines::LungCancerBamFiles()
-     pileup <- pileupVariants(bams, gmapR::TP53Genome(),
-                              Rsamtools::PileupParam(which=gmapR::TP53Which()))
+     param <- Rsamtools::ApplyPileupsParam(which=gmapR::TP53Which())
+     pileup <- pileupVariants(bams, gmapR::TP53Genome(), param)
 }

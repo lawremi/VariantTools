@@ -5,7 +5,7 @@
 ## TODO: add calculation of mean base quality
 ## TODO: support the BPPARAM -- how? can we pass it to applyPileups?
 
-pileupVariants <- function(bams, genome, param = PileupParam(),
+pileupVariants <- function(bams, genome, param = ApplyPileupsParam(),
                            minAltDepth = 1L, baseOnly = TRUE,
                            BPPARAM = defaultBPPARAM())
 {
