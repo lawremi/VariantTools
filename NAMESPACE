@@ -1,5 +1,6 @@
 import(methods)
 import(BiocGenerics)
+import(S4Vectors)
 import(IRanges)
 import(GenomicRanges)
 importFrom(parallel, mclapply, mcmapply)

@@ -27,7 +27,7 @@ fisher_p_vectorized <- function(x, y, m, n, relErr = 1 + 1e-7) {
   k <- x + y
   lo <- pmax(0L, k - n)
   hi <- pmin(k, m)
-  support <- IRanges:::mseq(lo, hi)
+  support <- S4Vectors:::mseq(lo, hi)
   w <- hi - lo + 1L
   m <- rep(m, w)
   n <- rep(n, w)
