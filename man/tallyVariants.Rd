@@ -57,12 +57,12 @@ VariantTallyParam(genome, readlen = NA,
   \item{param}{
     The parameters for the tallying process, as a
     \code{\link[gmapR]{BamTallyParam}}, typically constructed with
-    \code{VariantTallyParam}, see arguments below.
+    \code{TallyVariantsParam}, see arguments below.
   }
   \item{\dots}{
     For \code{tallyVariants}, arguments to pass to
-    \code{VariantTallyParam}, listed below. For
-    \code{VariantTallyParam}, arguments to pass to
+    \code{TallyVariantsParam}, listed below. For
+    \code{TallyVariantsParam}, arguments to pass to
     \code{\link[gmapR]{BamTallyParam}}.
   }
   \item{genome}{The genome, either a \code{\link[gmapR]{GmapGenome}} or
@@ -126,7 +126,7 @@ VariantTallyParam(genome, readlen = NA,
 \value{
   For \code{tallyVariants}, the tally \code{GRanges}.
 
-  For \code{VariantTallyParam}, an object with parameters suitable for
+  For \code{TallyVariantsParam}, an object with parameters suitable for
   variant calling.
 }
 \author{

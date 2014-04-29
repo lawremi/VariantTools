@@ -38,7 +38,7 @@ SampleSpecificVariantFilters(control, control.cov, calling.filters,
     \code{\link{tallyVariants}}.
   }
   \item{tally.param}{Parameters controlling the variant tallying step,
-    as typically constructed by \code{\link{VariantTallyParam}}.}
+    as typically constructed by \code{\link{TallyVariantsParam}}.}
   \item{calling.filters}{Filters to use for the initial,
     single-sample calling against reference, typically constructed by
     \code{\link{VariantCallingFilters}}.
@@ -71,7 +71,7 @@ SampleSpecificVariantFilters(control, control.cov, calling.filters,
   filtered (case only), called and determined to be sample-specific.
   The \code{callSampleSpecificVariants} function is fairly high-level,
   but it still allows the user to override the parameters and filters
-  for each stage of the process. See \code{\link{VariantTallyParam}},
+  for each stage of the process. See \code{\link{TallyVariantsParam}},
   \code{\link{VariantQAFilters}}, \code{\link{VariantCallingFilters}}
   and \code{SampleSpecificVariantFilters}.
 

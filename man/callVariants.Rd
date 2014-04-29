@@ -34,7 +34,7 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   }
   \item{tally.param}{
     Parameters controlling the variant tallying step,
-    as typically constructed by \code{\link{VariantTallyParam}}.
+    as typically constructed by \code{\link{TallyVariantsParam}}.
   }
   \item{calling.filters}{
     Filters used in the calling step, typically constructed with
