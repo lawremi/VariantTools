@@ -52,7 +52,7 @@ setMethod("tallyVariants", "character", function(x, ...) {
 
 setClass("TallyVariantsParam",
          representation(bamTallyParam = "BamTallyParam",
-                        read_pos_breaks = "integer",
+                        read_pos_breaks = "integerORNULL",
                         high_base_quality = "integer",
                         mask = "GenomicRanges",
                         keep_extra_stats = "logical",
