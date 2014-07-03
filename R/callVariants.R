@@ -63,7 +63,7 @@ BinomialLRFilter <-
 {
   function(x) {
     freq.cutoff <- lrtFreqCutoff(p.error, p.lower)
-    sample.freq <- altDepth(x) / totalDepth(x)
+    sample.freq <- altFraction(x)
     passed <- sample.freq >= freq.cutoff
     passed[is.na(passed)] <- FALSE
     passed
