@@ -95,7 +95,7 @@ setGeneric("callGenotypes", function(x, ...) standardGeneric("callGenotypes"))
 ## PL: likelihood of each genotype (RR, RA, AA) - binomial
 
 phred <- function(p) {
-  round(ifelse(p == 1.0, 0, -10 * log10(p)))
+  as.integer(round(ifelse(p == 1.0, 0, -10 * log10(p))))
 }
 
 compute_GQ <- function(gl, max = 99L) {
@@ -134,7 +134,8 @@ GenotypeRunVRanges <- function(seqnames, ranges, proto, genome) {
 
 addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome) {
   computeRunsForChr <- function(chr) {
-    gl <- compute_GL(0, as.vector(cov[[chr]]), p.error)
+    cov.chr <- as.integer(cov[[chr]])
+    gl <- compute_GL(0, cov.chr, p.error)
     gq <- compute_GQ(gl)
     gq.runs <- ranges(Rle(cut(gq, gq.breaks)))
     runs <- setdiff(gq.runs, ranges(x)[seqnames(x) == chr])
@@ -142,7 +143,7 @@ addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome) {
     runs.vr$GT <- Rle("0/0", length(runs.vr))
     runs.vr$GQ <- viewMins(Views(gq, runs))
     runs.vr$PL <- apply(phred(gl), 2, function(gli) viewMins(Views(gli, runs)))
-    cov.views <- Views(cov[[chr]], runs)
+    cov.views <- Views(cov.chr, runs)
     totalDepth(runs.vr) <- viewMeans(cov.views)
     runs.vr$MIN_DP <- viewMins(cov.views)
     runs.vr
