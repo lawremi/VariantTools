@@ -94,12 +94,12 @@ setGeneric("callGenotypes", function(x, ...) standardGeneric("callGenotypes"))
 ## GQ: genotype quality (p(GT) / p(AA) + p(RA) + p(AA))
 ## PL: likelihood of each genotype (RR, RA, AA) - binomial
 
-phred <- function(p) {
-  as.integer(round(ifelse(p == 1.0, 0, -10 * log10(p))))
+phred <- function(p, max = 9999L) {
+  pmin(as.integer(round(-10 * log10(p))), max)
 }
 
 compute_GQ <- function(gl, max = 99L) {
-  pmin(phred(1-gl[cbind(seq_len(nrow(gl)), max.col(gl))] / rowSums(gl)), max)
+  phred(1-gl[cbind(seq_len(nrow(gl)), max.col(gl))] / rowSums(gl), max=max)
 }
 
 compute_GL <- function(ad, dp, p.error = 0.05) {
@@ -132,7 +132,9 @@ GenotypeRunVRanges <- function(seqnames, ranges, proto, genome) {
 ## We also take the average coverage for DP, like GATK, despite the
 ## gVCF spec recommending we take the min. Instead, the min is MIN_DP.
 
-addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome) {
+addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome,
+                            BPPARAM = defaultBPPARAM())
+{
   computeRunsForChr <- function(chr) {
     cov.chr <- as.integer(cov[[chr]])
     gl <- compute_GL(0, cov.chr, p.error)
@@ -148,21 +150,24 @@ addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome) {
     runs.vr$MIN_DP <- viewMins(cov.views)
     runs.vr
   }
-  runs <- do.call(c, unname(lapply(names(cov), computeRunsForChr)))
+  runs <- do.call(c, unname(bplapply(names(cov), computeRunsForChr,
+                                     BPPARAM=BPPARAM)))
   c(x, runs)
 }
 
 setMethod("callGenotypes", "VRanges",
           function(x, cov = NULL, gq.breaks = c(0, 5, 20, 60, Inf),
-                   p.error = 0.05, genome = GmapGenome(unique(genome(x))))
-                   {
-                     gl <- compute_GL(altDepth(x), totalDepth(x), p.error)
-                     x$GT <- compute_GT(gl)
-                     x$GQ <- compute_GQ(gl)
-                     x$PL <- phred(gl)
-                     x$MIN_DP <- NA_integer_
-                     if (!is.null(cov)) {
-                       x <- addGenotypeRuns(x, cov, gq.breaks, p.error, genome)
-                     }
-                     x
-                   })
+                   p.error = 0.05, genome = GmapGenome(unique(genome(x))),
+                   BPPARAM = defaultBPPARAM())
+          {
+            gl <- compute_GL(altDepth(x), totalDepth(x), p.error)
+            x$GT <- compute_GT(gl)
+            x$GQ <- compute_GQ(gl)
+            x$PL <- phred(gl)
+            x$MIN_DP <- NA_integer_
+            if (!is.null(cov)) {
+              x <- addGenotypeRuns(x, cov, gq.breaks, p.error, genome,
+                                   BPPARAM=BPPARAM)
+            }
+            x
+          })
