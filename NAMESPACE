@@ -11,7 +11,7 @@ importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
 importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno, 
            softFilter, altDepth, totalDepth, refDepth, tabulate, VRanges,
            header, hardFilters, "geno<-", # for the idVerify AD<-NULL hack
-           altFraction
+           altFraction, softFilterMatrix, "totalDepth<-"
            )
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
@@ -19,6 +19,7 @@ importClassesFrom(rtracklayer, BigWigFile)
 importFrom(GenomeInfoDb, seqlevelsStyle, "seqlevelsStyle<-")
 importFrom(tools, file_ext)
 importFrom(BiocParallel, bpvec, registered, bplapply, bpworkers)
+importFrom(BSgenome, getSeq)
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
 export(calculateConcordanceMatrix,
