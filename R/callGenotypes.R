@@ -138,12 +138,12 @@ addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome) {
     gq <- compute_GQ(gl)
     gq.runs <- ranges(Rle(cut(gq, gq.breaks)))
     runs <- setdiff(gq.runs, ranges(x)[seqnames(x) == chr])
-    runs.vr <- GenotypeRunVRanges(chr, gq.runs, x, genome)
+    runs.vr <- GenotypeRunVRanges(chr, runs, x, genome)
     runs.vr$GT <- Rle("0/0", length(runs.vr))
     runs.vr$GQ <- viewMins(Views(gq, runs))
     runs.vr$PL <- apply(phred(gl), 2, function(gli) viewMins(Views(gli, runs)))
-    cov.views <- Views(cov[[chr]], ranges(gq.views))
-    totalDepth(vr) <- viewMeans(cov.views)
+    cov.views <- Views(cov[[chr]], runs)
+    totalDepth(runs.vr) <- viewMeans(cov.views)
     runs.vr$MIN_DP <- viewMins(cov.views)
     runs.vr
   }
@@ -159,6 +159,7 @@ setMethod("callGenotypes", "VRanges",
                      x$GT <- compute_GT(gl)
                      x$GQ <- compute_GQ(gl)
                      x$PL <- phred(gl)
+                     x$MIN_DP <- NA_integer_
                      if (!is.null(cov)) {
                        x <- addGenotypeRuns(x, cov, gq.breaks, p.error, genome)
                      }
