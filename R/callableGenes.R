@@ -13,7 +13,7 @@ setMethod("callableFraction", c("GRangesList", "ANY"),
             tx_sums / sum(width(tx))
           })
 
-setMethod("callableFraction", c("TranscriptDb", "ANY"),
+setMethod("callableFraction", c("TxDb", "ANY"),
           function(tx, reads, ...) {
             callGeneric(exonsBy(tx), reads, ...)
           })
