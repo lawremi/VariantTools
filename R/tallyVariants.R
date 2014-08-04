@@ -7,7 +7,9 @@
 ### Want to support both bam_tally and applyPileups. Ideally, there
 ### would be one generic called tallyVariants(). We could dispatch on
 ### the parameter object, with a BamTallyVariantsParam() and a
-### PileupTallyVariantsParam(). 
+### PileupTallyVariantsParam(). BamTallyVariantsParam could be
+### provided by the gmapR package, which would depend on VariantTools,
+### instead of the other way around.
 
 setGeneric("tallyVariants", function(x, ...) standardGeneric("tallyVariants"))
 

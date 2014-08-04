@@ -3,84 +3,12 @@
 ### -------------------------------------------------------------------------
 ###
 ### Routines for calling and manipulating genotypes.
-### 
+###
 
-### Genotype representation
-## Currently, VRanges supports the conventional VCF genotype encoding
-## "X/X" in the "GT" metadata column. This seems OK for now. One issue
-## is positions that are heterozygous for two alt alleles. VRanges has
-## only a single alt per row, so in these cases each row would have
-## "./1" as its genotype. After conversion to VCF, we could have a
-## special collapse function that merges these, if needed.
+setGeneric("callGenotypes",
+           function(variants, cov, ...) standardGeneric("callGenotypes"))
 
-### Genotype calling
-
-## callGT <- function(x, min.het.freq = 0.2, min.hom.freq = 1 - min.het.freq,
-##                    callable.cov = 20L)
-## {
-##   ifelse(altFraction(x) < min.het.freq,
-##          ifelse(refFraction(x) > min.hom.freq,
-##                 ifelse(totalDepth(x) >= callable.cov,
-##                        "0/0",
-##                        "0/."),
-##                 ifelse(refFraction(x) >= min.het.freq,
-##                        "0/o", # 0/o ('o' means other)
-##                        "o/o") # o/o
-##                 ),
-##          ifelse(altFraction(x) > min.hom.freq,
-##                 ifelse(totalDepth(x) >= callable.cov,
-##                        "1/1",
-##                        "./1"),
-##                 ifelse(refFraction(x) >= min.het.freq,
-##                        "0/1",
-##                        "o/1"))) # o/1
-## }
-
-## addGenotypeRuns <- function(x, cov, callable.cov, genome)
-## {
-##   callable.runs <- slice(cov, callable.cov)
-##   x.rl <- as(x, "RangesList")
-##   wt.runs <- setdiff(callable.runs, x.rl)
-##   nocall.runs <- setdiff(gaps(ranges(callable.runs)), x.rl)
-##   runsToGRanges <- function(runs, gt) {
-##     gr <- as(runs, "GRanges")
-##     ref <- getSeq(genome, resize(gr, 1L))
-##     vr <- VRanges(seqnames(gr), ranges(gr), ref=ref,
-##                   totalDepth=viewMins(Views(cov, runs)),
-##                   softFilterMatrix=matrix(NA, length(gr),
-##                     ncol(softFilterMatrix(x))))
-##     ml <- rep(list(rep(NA, length(gr))), ncol(mcols(x)))
-##     mcols(vr) <- as(setNames(ml, names(mcols(x))), "DataFrame")
-##     mcols(vr)$GT <- gt
-##     vr
-##   }
-##   c(x,
-##     runsToGRanges(wt.runs, "0/0"),
-##     runsToGRanges(nocall.runs, "./."))
-## }
-
-setGeneric("callGenotypes", function(x, ...) standardGeneric("callGenotypes"))
-## setMethod("callGenotypes", "VRanges",
-##           function(x, cov = NULL, p.het = 0.5, p.error = 0.05, power = 0.99,
-##                    genome = GmapGenome(genome(x)))
-##           {
-##             if (!is.numeric(p.het) || is.na(p.het)) {
-##               stop("'p.het' must be a non-NA number")
-##             }
-##             if (p.het < 0 || p.het > 0) {
-##               stop("'p.het' must be in [0,1]")
-##             }
-##             min.het.freq <- lrtFreqCutoff(p.het, p.error)
-##             filters <- VariantCallingFilters(p.lower=p.het, p.error=p.error)
-##             callable.cov <- minCallableCoverage(filters, power=power)            
-##             x$GT <- callGT(x, min.het.freq, callable.cov)
-##             if (!is.null(cov)) {
-##               x <- addGenotypeRuns(x, cov, callable.cov, genome)
-##             }
-##             x
-##           })
-
-### Alternative strategy: calculate binomial probabilities and call
+### Strategy: calculate binomial probabilities and call
 ### whichever PL is 0 (p=1.0).
 
 ### This is equivalent to the LRT, as long as:
@@ -95,7 +23,9 @@ setGeneric("callGenotypes", function(x, ...) standardGeneric("callGenotypes"))
 ## PL: likelihood of each genotype (RR, RA, AA) - binomial
 
 phred <- function(p, max = 9999L) {
-  pmin(as.integer(round(-10 * log10(p))), max)
+  ans <- pmin(round(-10 * log10(p)), max)
+  mode(ans) <- "integer"
+  ans
 }
 
 compute_GQ <- function(gl, max = 99L) {
@@ -113,15 +43,17 @@ compute_GT <- function(gl) {
   c("0/0", "0/1", "1/1")[max.col(gl, ties.method="first")]
 }
 
-GenotypeRunVRanges <- function(seqnames, ranges, proto, genome) {
-  runs.gr <- GRanges(seqnames, ranges)
+GenotypeRunVRanges <- function(ranges, proto, which, genome) {
+  runs.gr <- GRanges(seqnames(which), shift(ranges, start(which) - 1L))
   ref <- getSeq(genome, resize(runs.gr, 1L))
   runs.vr <- VRanges(seqnames(runs.gr), ranges(runs.gr),
                      ref=ref, alt="<NON_REF>",
                      softFilterMatrix=matrix(NA, length(runs.gr),
-                       ncol(softFilterMatrix(proto))))
+                       ncol(softFilterMatrix(proto))),
+                     seqlengths = seqlengths(proto))
   ml <- rep(list(rep(NA, length(runs.gr))), ncol(mcols(proto)))
   mcols(runs.vr) <- as(setNames(ml, names(mcols(proto))), "DataFrame")
+  seqinfo(runs.vr) <- seqinfo(proto)
   runs.vr
 }
 
@@ -132,42 +64,79 @@ GenotypeRunVRanges <- function(seqnames, ranges, proto, genome) {
 ## We also take the average coverage for DP, like GATK, despite the
 ## gVCF spec recommending we take the min. Instead, the min is MIN_DP.
 
-addGenotypeRuns <- function(x, cov, gq.breaks, p.error, genome,
-                            BPPARAM = defaultBPPARAM())
-{
-  computeRunsForChr <- function(chr) {
-    cov.chr <- as.integer(cov[[chr]])
-    gl <- compute_GL(0, cov.chr, p.error)
-    gq <- compute_GQ(gl)
-    gq.runs <- ranges(Rle(cut(gq, gq.breaks)))
-    runs <- setdiff(gq.runs, ranges(x)[seqnames(x) == chr])
-    runs.vr <- GenotypeRunVRanges(chr, runs, x, genome)
-    runs.vr$GT <- Rle("0/0", length(runs.vr))
-    runs.vr$GQ <- viewMins(Views(gq, runs))
-    runs.vr$PL <- apply(phred(gl), 2, function(gli) viewMins(Views(gli, runs)))
-    cov.views <- Views(cov.chr, runs)
-    totalDepth(runs.vr) <- viewMeans(cov.views)
-    runs.vr$MIN_DP <- viewMins(cov.views)
-    runs.vr
-  }
-  runs <- do.call(c, unname(bplapply(names(cov), computeRunsForChr,
-                                     BPPARAM=BPPARAM)))
-  c(x, runs)
+loadAndComputeGenotypesForRegion <- function(vcf, cov, which, ...) {
+  vr <- readVcfAsVRanges(vcf, which=which)
+  callGenotypesOneRegion(vr, cov, which, ...)
 }
 
-setMethod("callGenotypes", "VRanges",
-          function(x, cov = NULL, gq.breaks = c(0, 5, 20, 60, Inf),
-                   p.error = 0.05, genome = GmapGenome(unique(genome(x))),
-                   BPPARAM = defaultBPPARAM())
+callGenotypesOneRegion <- function(variants, cov, which, p.error, ...) {
+  gl <- compute_GL(altDepth(variants), totalDepth(variants), p.error)
+  variants$GT <- compute_GT(gl)
+  variants$GQ <- compute_GQ(gl)
+  variants$PL <- phred(gl)
+  variants$MIN_DP <- rep(NA_integer_, length(variants))
+  if (!is.null(cov)) {
+    variants <- addGenotypeRuns(variants, cov, which, p.error=p.error, ...)
+  }
+  variants
+}
+
+addGenotypeRuns <- function(variants, cov, which, gq.breaks, p.error, genome) {
+  if (length(runLength(seqnames(variants))) > 1L) {
+    stop("currently all ranges must be on the same sequence")
+  }
+  which <- keepSeqlevels(which, as.character(seqnames(which)))
+  cov <- import(cov, which=which, as="NumericList")[[1L]]
+  cov.v <- as.integer(cov)
+  gl <- compute_GL(0, cov.v, p.error)
+  gq <- compute_GQ(gl)
+  gq.runs <- ranges(Rle(cut(gq, gq.breaks)))
+  runs <- setdiff(gq.runs, shift(ranges(variants), 1L - start(which)))
+  runs.vr <- GenotypeRunVRanges(runs, variants, which, genome)
+  runs.vr$GT <- Rle("0/0", length(runs.vr))
+  runs.vr$GQ <- viewMins(Views(gq, runs))
+  runs.vr$PL <- matrix(apply(phred(gl), 2,
+                             function(gli) viewMins(Views(gli, runs))),
+                       ncol=3L)
+  cov.views <- Views(cov.v, runs)
+  totalDepth(runs.vr) <- viewMeans(cov.views)
+  runs.vr$MIN_DP <- viewMins(cov.views)
+  c(variants, runs.vr)
+}
+
+setMethod("callGenotypes", c("VRanges", "BigWigFile"),
+          function(variants, cov, gq.breaks = c(0, 5, 20, 60, Inf),
+                   p.error = 0.05,
+                   genome = GmapGenome(unique(genome(variants))),
+                   which = tileGenome(seqinfo(genome), ntile=ntile),
+                   BPPARAM = defaultBPPARAM(), ntile = 100L)
           {
-            gl <- compute_GL(altDepth(x), totalDepth(x), p.error)
-            x$GT <- compute_GT(gl)
-            x$GQ <- compute_GQ(gl)
-            x$PL <- phred(gl)
-            x$MIN_DP <- NA_integer_
-            if (!is.null(cov)) {
-              x <- addGenotypeRuns(x, cov, gq.breaks, p.error, genome,
-                                   BPPARAM=BPPARAM)
-            }
-            x
+            which <- unlist(which)
+            f <- factor(findOverlaps(variants, which, select="arbitrary"),
+                        seq_len(length(which)))
+            vl <- split(variants, f)
+            ansl <- bpmapply(callGenotypesOneRegion, vl, as.list(which),
+                             MoreArgs=list(
+                               cov=cov,
+                               gq.breaks=gq.breaks,
+                               p.error=p.error,
+                               genome=genome
+                               ),
+                             BPPARAM=BPPARAM)
+            do.call(c, unname(ansl))
+          })
+
+setMethod("callGenotypes", c("TabixFile", "BigWigFile"),
+          function(variants, cov, gq.breaks = c(0, 5, 20, 60, Inf),
+                   p.error = 0.05,
+                   genome = GmapGenome(unique(genome(variants))),
+                   which = tileGenome(seqinfo(genome), ntile=ntile),
+                   BPPARAM = defaultBPPARAM(), ntile = 100L)
+          {
+            which <- as.list(unlist(which))
+            ansl <- bplapply(which, loadAndComputeGenotypesForRegion,
+                             vcf=variants, bigwig=cov,
+                             gq.breaks=gq.breaks, p.error=p.error,
+                             genome=genome, BPPARAM=BPPARAM)
+            do.call(c, unname(ansl))
           })
