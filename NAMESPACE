@@ -39,6 +39,8 @@ export(pileupVariants)
 ## compatibility
 export(makeVRangesFromVariantGRanges)
 
+exportMethods(callGenotypes)
+
 ## API for next release
 ## export(checkVariantConcordance,
 ##        callableFraction, annotateTrans,
