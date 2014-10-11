@@ -18,7 +18,7 @@ importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
 importFrom(GenomeInfoDb, seqlevelsStyle, "seqlevelsStyle<-")
 importFrom(tools, file_ext)
-importFrom(BiocParallel, bpvec, registered, bplapply, bpworkers)
+importFrom(BiocParallel, bpvec, registered, bplapply, bpmapply, bpworkers)
 importFrom(BSgenome, getSeq)
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
@@ -39,6 +39,7 @@ export(pileupVariants)
 ## compatibility
 export(makeVRangesFromVariantGRanges)
 
+export(CallGenotypesParam)
 exportMethods(callGenotypes)
 
 ## API for next release

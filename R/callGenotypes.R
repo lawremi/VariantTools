@@ -66,33 +66,36 @@ GenotypeRunVRanges <- function(ranges, proto, which, genome) {
 
 loadAndComputeGenotypesForRegion <- function(vcf, cov, which, ...) {
   vr <- readVcfAsVRanges(vcf, which=which)
+  if (length(runValue(sampleNames(vr))) > 1L) {
+    stop("variants must be from a single sample")
+  }
   callGenotypesOneRegion(vr, cov, which, ...)
 }
 
-callGenotypesOneRegion <- function(variants, cov, which, p.error, ...) {
-  gl <- compute_GL(altDepth(variants), totalDepth(variants), p.error)
+callGenotypesOneRegion <- function(variants, cov, which, param) {
+  gl <- compute_GL(altDepth(variants), totalDepth(variants), param@p.error)
   variants$GT <- compute_GT(gl)
   variants$GQ <- compute_GQ(gl)
   variants$PL <- phred(gl)
   variants$MIN_DP <- rep(NA_integer_, length(variants))
   if (!is.null(cov)) {
-    variants <- addGenotypeRuns(variants, cov, which, p.error=p.error, ...)
+    variants <- addGenotypeRuns(variants, cov, which, param)
   }
   variants
 }
 
-addGenotypeRuns <- function(variants, cov, which, gq.breaks, p.error, genome) {
+addGenotypeRuns <- function(variants, cov, which, param) {
   if (length(runLength(seqnames(variants))) > 1L) {
     stop("currently all ranges must be on the same sequence")
   }
   which <- keepSeqlevels(which, as.character(seqnames(which)))
   cov <- import(cov, which=which, as="NumericList")[[1L]]
   cov.v <- as.integer(cov)
-  gl <- compute_GL(0, cov.v, p.error)
+  gl <- compute_GL(0, cov.v, param@p.error)
   gq <- compute_GQ(gl)
-  gq.runs <- ranges(Rle(cut(gq, gq.breaks)))
+  gq.runs <- ranges(Rle(cut(gq, param@gq.breaks)))
   runs <- setdiff(gq.runs, shift(ranges(variants), 1L - start(which)))
-  runs.vr <- GenotypeRunVRanges(runs, variants, which, genome)
+  runs.vr <- GenotypeRunVRanges(runs, variants, which, param@genome)
   runs.vr$GT <- Rle("0/0", length(runs.vr))
   runs.vr$GQ <- viewMins(Views(gq, runs))
   runs.vr$PL <- matrix(apply(phred(gl), 2,
@@ -104,39 +107,72 @@ addGenotypeRuns <- function(variants, cov, which, gq.breaks, p.error, genome) {
   c(variants, runs.vr)
 }
 
+setClass("CallGenotypesParam",
+         representation(gq.breaks = "numeric",
+                        p.error = "numeric",
+                        genome = "GmapGenome",
+                        which = "GenomicRangesList"))
+
+CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
+                               p.error = 0.05,
+                               which = tileGenome(seqinfo(genome), ntile=ntile),
+                               ntile = 100L)
+{
+  if (any(is.na(gq.breaks)) || any(gq.breaks < 0)) {
+    stop("'gq.breaks' values must be non-negative and non-NA")
+  }
+  if (!isSingleNumber(p.error) || p.error < 0) {
+    stop("'p.error' must be a single, non-negative, non-NA number")
+  }
+  if (!isSingleNumber(ntile) || ntile < 0) {
+    stop("'ntile' must be a single, non-negative, non-NA number")
+  }
+  new("CallGenotypesParam", gq.breaks=gq.breaks, p.error=p.error,
+      genome=genome, which=which)
+}
+
 setMethod("callGenotypes", c("VRanges", "BigWigFile"),
-          function(variants, cov, gq.breaks = c(0, 5, 20, 60, Inf),
-                   p.error = 0.05,
-                   genome = GmapGenome(unique(genome(variants))),
-                   which = tileGenome(seqinfo(genome), ntile=ntile),
-                   BPPARAM = defaultBPPARAM(), ntile = 100L)
+          function(variants, cov,
+                   param =
+                     CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+                   BPPARAM = defaultBPPARAM())
           {
-            which <- unlist(which)
+            sample <- runValue(sampleNames(variants))
+            if (length(sample) > 1L) {
+              stop("variants must be from a single sample")
+            }
+            which <- unlist(param@which)
             f <- factor(findOverlaps(variants, which, select="arbitrary"),
                         seq_len(length(which)))
             vl <- split(variants, f)
             ansl <- bpmapply(callGenotypesOneRegion, vl, as.list(which),
                              MoreArgs=list(
                                cov=cov,
-                               gq.breaks=gq.breaks,
-                               p.error=p.error,
-                               genome=genome
+                               param=param
                                ),
                              BPPARAM=BPPARAM)
-            do.call(c, unname(ansl))
+            ans <- do.call(c, unname(ansl))
+            sampleNames(ans) <- sample
+            ans
           })
 
 setMethod("callGenotypes", c("TabixFile", "BigWigFile"),
-          function(variants, cov, gq.breaks = c(0, 5, 20, 60, Inf),
-                   p.error = 0.05,
-                   genome = GmapGenome(unique(genome(variants))),
-                   which = tileGenome(seqinfo(genome), ntile=ntile),
-                   BPPARAM = defaultBPPARAM(), ntile = 100L)
+          function(variants, cov,
+                   param =
+                     CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+                   BPPARAM = defaultBPPARAM())
           {
-            which <- as.list(unlist(which))
+            which <- as.list(unlist(param@which))
             ansl <- bplapply(which, loadAndComputeGenotypesForRegion,
-                             vcf=variants, bigwig=cov,
-                             gq.breaks=gq.breaks, p.error=p.error,
-                             genome=genome, BPPARAM=BPPARAM)
-            do.call(c, unname(ansl))
+                             vcf=variants, bigwig=cov, param=param,
+                             BPPARAM=BPPARAM)
+            ans <- do.call(c, unname(ansl))
+            sample <- na.omit(unique(sampleNames(ans)))
+            sampleNames(ans) <- sample
+            ans
           })
+
+setMethod("show", "CallGenotypesParam", function(object) {
+  cat("A", class(object), "object\n", sep = " ")
+  cat(gmapR:::showSlots(object, count = FALSE), sep = "")
+})
