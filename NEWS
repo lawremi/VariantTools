@@ -1,3 +1,13 @@
+CHANGES IN VERSION 1.8.0
+-----------------------
+
+NEW FEATURES
+
+    o Add callGenotypes function for annotating a set of tallies with
+      diploid genotype quality, likelihoods, etc in a way that is
+      conformant with the gVCF spec. The methods are somewhat similar
+      to those used by the GATK UnifiedGenotyper.
+    
 CHANGES IN VERSION 1.6.0
 -----------------------
 
