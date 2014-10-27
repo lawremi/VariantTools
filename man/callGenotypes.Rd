@@ -129,7 +129,7 @@ bwf <- rtracklayer::export(coverage(bams$H1993), "coverage.bw")
 genotypes <- callGenotypes(tallies, bwf, BPPARAM=BiocParallel::SerialParam())
 
 ## write to gVCF
-writeVcf(genotypes, "genotypes.vcf.gz")
+writeVcf(genotypes, "genotypes.vcf", index=TRUE)
 
 ## customize
 params <- CallGenotypesParam(gmapR::TP53Genome(), p.error = 1/1000)
