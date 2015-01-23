@@ -3,25 +3,25 @@ import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
 import(GenomicRanges)
+import(VariantAnnotation)
+import(GenomeInfoDb)
 importFrom(parallel, mclapply, mcmapply)
-importFrom(Biostrings, DNAStringSet, detail)
-importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich)
+importFrom(Biostrings, DNAStringSet, detail, DNA_BASES)
+importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich, ApplyPileupsParam,
+           PileupFiles, plpWhat, "plpWhat<-", applyPileups)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
 importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
-importFrom(VariantAnnotation, VCFHeader, VCF, readVcf, alt, ref, geno, 
-           softFilter, altDepth, totalDepth, refDepth, tabulate, VRanges,
-           header, hardFilters, "geno<-", # for the idVerify AD<-NULL hack
-           altFraction, softFilterMatrix, "totalDepth<-"
-           )
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
-importFrom(GenomeInfoDb, seqlevelsStyle, "seqlevelsStyle<-")
 importFrom(tools, file_ext)
 importFrom(BiocParallel, bpvec, registered, bplapply, bpmapply, bpworkers)
 importFrom(BSgenome, getSeq)
+importFrom(Biobase, sampleNames, "sampleNames<-")
 
 export(callVariants, qaVariants, tallyVariants, postFilterVariants)
+export(MinTotalDepthFilter)
+
 export(calculateConcordanceMatrix,
        callVariantConcordance, calculateVariantConcordance)
 export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
@@ -29,6 +29,8 @@ export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
 export(variantGR2Vcf)
 
 export(callSampleSpecificVariants, SampleSpecificVariantFilters)
+
+export(SetdiffVariantsFilter, DepthFETFilter, MaxControlFreqFilter)
 
 export(callWildtype, minCallableCoverage)
 
@@ -41,14 +43,3 @@ export(makeVRangesFromVariantGRanges)
 
 export(CallGenotypesParam)
 exportMethods(callGenotypes)
-
-## API for next release
-## export(checkVariantConcordance,
-##        callableFraction, annotateTrans,
-##        plotTNVariantsAlongGenome, TwoSampleFET, plotTiTv)
-
-
-## API that will likely be (re)moved
-## export(VEP2gr) # moving to VariantAnnotation or some other package
-## export(detectQualityType) # not exporting for now
-## export(trans2genome) # FIXME: push up to GenomicRanges, based on map?
