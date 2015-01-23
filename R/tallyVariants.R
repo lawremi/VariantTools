@@ -19,6 +19,9 @@ setMethod("tallyVariants", "BamFile",
           function(x, param = TallyVariantsParam(...), ...,
                    BPPARAM = defaultBPPARAM())
           {
+            if (!missing(param) && length(list(...)) > 0L) {
+              warning("arguments in '...' are ignored when passing 'param'")
+            }
             tally_region <- function(x, which, param) {
               iit <- bam_tally(x, param@bamTallyParam, which = which)
               ans <- variantSummary(iit, param@read_pos_breaks,
