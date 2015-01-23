@@ -37,6 +37,6 @@ SingleVariantFilter <- function() {
 
 VariantConcordanceFilters <- function() {
   FilterRules(c(NonN = NonNRefFilter(),
-                minCount = MinCountFilter(10L),
+                minCount = MinAltDepthFilter(10L),
                 singleVariant = SingleVariantFilter()))
 }

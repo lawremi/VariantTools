@@ -159,8 +159,8 @@ CallableInOtherFilter <- function(other.cov, calling.filters, power = 0.8)
   function(x) {
     other.n <- extractCoverageForPositions(other.cov, resize(x, 1))
     f <- lrtFreqCutoff(lr.params$p.error, lr.params$p.lower)
-    min.count <- round(pmax(params(rc.filter)$min.count, other.n * f))
-    1 - pbinom(min.count, other.n, lr.params$p.lower) > power
+    min.depth <- round(pmax(params(rc.filter)$min.depth, other.n * f))
+    1 - pbinom(min.depth, other.n, lr.params$p.lower) > power
   }
 }
 
@@ -187,4 +187,28 @@ annotateWithControlCounts <- function(case.specific, control, control.cov) {
   case.specific$control.count <- control.count
   case.specific$control.count.total <- control.count.total
   case.specific
+}
+
+caseControlFET <- function(case, control, control.cov) {
+  case <- annotateWithControlCounts(case, control, control.cov)
+  with(case,
+       fisher_p(altDepth, (totalDepth - altDepth),
+                altDepth + control.count,
+                (totalDepth - altDepth) +
+                (control.count.total - control.count)))
+}
+
+DepthFETFilter <- function(control, control.cov, p.value.cutoff = 0.05) {
+  function(x) {
+    p.value <- caseControlFET(x, control, control.cov)
+    p.value < p.value.cutoff
+  }
+}
+
+MaxControlFreqFilter <- function(control, control.cov, max.control.freq = 0.03) {
+  function(x) {
+    x <- annotateWithControlCounts(x, control, control.cov)
+    freq <-  x$control.count / x$control.count.total
+    ifelse(is.na(freq), 0, freq) <= max.control.freq
+  }
 }

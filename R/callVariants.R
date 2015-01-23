@@ -48,13 +48,19 @@ VariantCallingFilters <-
   function(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 {
   c(VariantSanityFilters(),
-    FilterRules(list(readCount = MinCountFilter(read.count),
+    FilterRules(list(readCount = MinTotalDepthFilter(read.count),
                      likelihoodRatio = BinomialLRFilter(p.lower, p.error))))
 }
 
-MinCountFilter <- function(min.count = 2L) {
+MinAltDepthFilter <- function(min.depth = 2L) {
   function(x) {
-    altDepth(x) >= min.count
+    altDepth(x) >= min.depth
+  }
+}
+
+MinTotalDepthFilter <- function(min.depth = 10L) {
+  function(x) {
+    totalDepth(x) >= min.depth
   }
 }
 

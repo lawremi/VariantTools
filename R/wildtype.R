@@ -22,7 +22,7 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
     stop("'readCount' filter not found in 'calling.filters'")
   size <- seq(1L, max.coverage)
   f <- lrtFreqCutoff(params(lr.filter)$p.lower, params(lr.filter)$p.error)
-  p <- 1 - pbinom(round(pmax(params(rc.filter)$min.count, size * f)), size,
+  p <- 1 - pbinom(round(pmax(params(rc.filter)$min.depth, size * f)), size,
                   params(lr.filter)$p.lower)
   cov <- head(size[p > power], 1L)
   if (length(cov) == 0L)

@@ -10,7 +10,7 @@ qaVariants <- function(x, qa.filters = VariantQAFilters(...), ...)
 VariantQAFilters <- function(fisher.strand.p.value = 1e-4, min.mdfne = 10L)
 {
   FilterRules(c(mdfne = MedianDistFromNearestEndFilter(min.mdfne),
-                fisherStrand = FisherStrandFilter(fisher.strand.p.value)))
+                fisherStrand = StrandFETFilter(fisher.strand.p.value)))
 }
 
 ## With new gmapR, this is only necessary for filtering the ref N's.
@@ -35,7 +35,7 @@ ReadPosCountFilter <- function(read.pos.count = 1L) {
   }
 }
 
-FisherStrandFilter <- function(p.value = 1e-4) {
+StrandFETFilter <- function(p.value = 1e-4) {
   function(x) {
     p <- with(mcols(x),
               fisher_p_vectorized(count.plus.ref,
