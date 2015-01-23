@@ -1,4 +1,4 @@
-test_getConcordantCliques_twoConcord() {
+test_getConcordantCliques_twoConcord <- function() {
   input <- matrix(c(1, 0.9, 0.9, 1), ncol=2)
   threshold <- 0.8 
   output <- .getConcordantCliques(input, threshold)
@@ -6,7 +6,7 @@ test_getConcordantCliques_twoConcord() {
   checkIdentical(expectedOutput, output)
 }
 
-test_getConcordantCliques_noConcord() {
+test_getConcordantCliques_noConcord <- function() {
   input <- matrix(c(1, 0.1, 0.1, 1), ncol=2)
   threshold <- 0.8 
   output <- .getConcordantCliques(input, threshold)
@@ -14,7 +14,7 @@ test_getConcordantCliques_noConcord() {
   checkIdentical(expectedOutput, output)
 }
 
-test_getConcordantCliques_twoIdenticalPairs() {
+test_getConcordantCliques_twoIdenticalPairs <- function() {
   ##A is C and B is D
   input <- matrix(c(1, 0, 0.9, 0,
                     0, 1, 0, .95,
@@ -28,7 +28,7 @@ test_getConcordantCliques_twoIdenticalPairs() {
   checkIdentical(expectedOutput, output)
 }
 
-test_idVerify_twoConcordant() {
+test_idVerify_twoConcordant <- function() {
   p53 <- gmapR:::exonsOnTP53Genome("TP53")
   bams <- LungCancerLines::LungCancerBamFiles()
   tally.param <- VariantTallyParam(gmapR::TP53Genome(), 

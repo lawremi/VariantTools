@@ -1,4 +1,4 @@
-test_calculateConcordanceMatrix_fileInput() {
+test_calculateConcordanceMatrix_fileInput <- function() {
   p53 <- gmapR:::exonsOnTP53Genome("TP53")
   bams <- LungCancerLines::LungCancerBamFiles()
   tally.param <- VariantTallyParam(gmapR::TP53Genome(), 

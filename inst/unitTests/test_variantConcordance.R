@@ -1,4 +1,4 @@
-test_checkVariantConcordance() {
+test_checkVariantConcordance <- function() {
   p53 <- gmapR:::exonsOnTP53Genome("TP53")
   bams <- LungCancerLines::LungCancerBamFiles()
   bam <- bams$H1993
