@@ -179,9 +179,9 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 
 annotateWithControlCounts <- function(case.specific, control, control.cov) {
   m <- match(case.specific, control)
-  control.count <- altDepth(control)[m]
+  control.count <- as.vector(altDepth(control))[m]
   control.count[is.na(control.count)] <- 0L
-  control.count.total <- totalDepth(control)[m]
+  control.count.total <- as.vector(totalDepth(control))[m]
   control.count.total[is.na(m)] <-
     extractCoverageForPositions(control.cov, resize(case.specific[is.na(m)], 1))
   case.specific$control.count <- control.count
