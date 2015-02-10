@@ -207,7 +207,7 @@ DepthFETFilter <- function(control, control.cov, p.value.cutoff = 0.05) {
 
 MaxControlFreqFilter <- function(control, control.cov, max.control.freq = 0.03) {
   function(x) {
-    x <- annotateWithControlCounts(x, control, control.cov)
+    x <- annotateWithControlDepth(x, control, control.cov)
     freq <-  x$control.alt.depth / x$control.total.depth
     ifelse(is.na(freq), 0, freq) <= max.control.freq
   }
