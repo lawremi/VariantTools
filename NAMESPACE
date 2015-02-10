@@ -28,7 +28,8 @@ export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
        VariantPostFilters, TallyVariantsParam)
 export(variantGR2Vcf)
 
-export(callSampleSpecificVariants, SampleSpecificVariantFilters)
+export(callSampleSpecificVariants, SampleSpecificVariantFilters,
+       annotateWithControlDepth)
 
 export(SetdiffVariantsFilter, DepthFETFilter, MaxControlFreqFilter)
 

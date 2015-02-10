@@ -71,7 +71,7 @@ setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
                                                     calling.filters,
                                                     ...)
             case.specific <- subsetByFilter(case.called, filters)
-            annotateWithControlCounts(case.specific, control, control.cov)
+            annotateWithControlDepth(case.specific, control, control.cov)
           })
 
 setMethod("callSampleSpecificVariants", c("VRanges", "VRanges"),
@@ -82,7 +82,7 @@ setMethod("callSampleSpecificVariants", c("VRanges", "VRanges"),
                                                     hardFilters(case),
                                                     ...)
             case.specific <- subsetByFilter(case, filters)
-            annotateWithControlCounts(case.specific, control, control.cov)
+            annotateWithControlDepth(case.specific, control, control.cov)
           })
 
 setMethod("callSampleSpecificVariants", c("BamFile", "BamFile"),
@@ -177,25 +177,25 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
   }
 }
 
-annotateWithControlCounts <- function(case.specific, control, control.cov) {
-  m <- match(case.specific, control)
-  control.count <- as.vector(altDepth(control))[m]
-  control.count[is.na(control.count)] <- 0L
-  control.count.total <- as.vector(totalDepth(control))[m]
-  control.count.total[is.na(m)] <-
-    extractCoverageForPositions(control.cov, resize(case.specific[is.na(m)], 1))
-  case.specific$control.count <- control.count
-  case.specific$control.count.total <- control.count.total
-  case.specific
+annotateWithControlDepth <- function(case, control, control.cov) {
+  m <- match(case, control)
+  control.alt.depth <- as.vector(altDepth(control))[m]
+  control.alt.depth[is.na(control.alt.depth)] <- 0L
+  control.total.depth <- as.vector(totalDepth(control))[m]
+  control.total.depth[is.na(m)] <-
+    extractCoverageForPositions(control.cov, resize(case[is.na(m)], 1))
+  case$control.alt.depth <- control.alt.depth
+  case$control.total.depth <- control.total.depth
+  case
 }
 
 caseControlFET <- function(case, control, control.cov) {
-  case <- annotateWithControlCounts(case, control, control.cov)
+  case <- annotateWithControlDepth(case, control, control.cov)
   with(case,
        fisher_p(altDepth, (totalDepth - altDepth),
-                altDepth + control.count,
+                altDepth + control.alt.depth,
                 (totalDepth - altDepth) +
-                (control.count.total - control.count)))
+                (control.total.depth - control.alt.depth)))
 }
 
 DepthFETFilter <- function(control, control.cov, p.value.cutoff = 0.05) {
@@ -208,7 +208,7 @@ DepthFETFilter <- function(control, control.cov, p.value.cutoff = 0.05) {
 MaxControlFreqFilter <- function(control, control.cov, max.control.freq = 0.03) {
   function(x) {
     x <- annotateWithControlCounts(x, control, control.cov)
-    freq <-  x$control.count / x$control.count.total
+    freq <-  x$control.alt.depth / x$control.total.depth
     ifelse(is.na(freq), 0, freq) <= max.control.freq
   }
 }
