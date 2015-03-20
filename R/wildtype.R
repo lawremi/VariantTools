@@ -18,11 +18,14 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
   if (is.null(lr.filter))
     stop("'likelihoodRatio' filter not found in 'calling.filters'")
   rc.filter <- calling.filters$readCount
-  if (is.null(rc.filter))
-    stop("'readCount' filter not found in 'calling.filters'")
+  if (is.null(rc.filter)) {
+    min.depth <- 0L
+  } else {
+    min.depth <- rc.filter$min.depth
+  }
   size <- seq(1L, max.coverage)
   f <- lrtFreqCutoff(params(lr.filter)$p.lower, params(lr.filter)$p.error)
-  p <- 1 - pbinom(round(pmax(params(rc.filter)$min.depth, size * f)), size,
+  p <- 1 - pbinom(ceiling(pmax(min.depth, size * f))-1L, size,
                   params(lr.filter)$p.lower)
   cov <- head(size[p > power], 1L)
   if (length(cov) == 0L)
