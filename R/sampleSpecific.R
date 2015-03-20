@@ -121,7 +121,7 @@ extractCoverageForPositions <- function(cov, pos) {
 CallableInOtherFilter <- function(other.cov, calling.filters, min.power = 0.8)
 {
   function(x) {
-    calculatePowerInOther(x, other.cov, calling.filters) >= power
+    calculatePowerInOther(x, other.cov, calling.filters) >= min.power
   }
 }
 
