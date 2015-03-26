@@ -31,7 +31,7 @@ calculateVariantConcordance <- function(gr1, gr2, which = NULL) {
 
 SingleVariantFilter <- function() {
   function(x) {
-    tabulate(x)$sample.count == 1L
+    !duplicated(granges(x))
   }
 }
 
