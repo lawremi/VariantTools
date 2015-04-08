@@ -21,7 +21,7 @@ minCallableCoverage <- function(calling.filters, power = 0.80,
   if (is.null(rc.filter)) {
     min.depth <- 0L
   } else {
-    min.depth <- calling.filters$min.depth
+    min.depth <- params(rc.filter)$min.depth
   }
   size <- seq(1L, max.coverage)
   f <- lrtFreqCutoff(params(lr.filter)$p.lower, params(lr.filter)$p.error)
