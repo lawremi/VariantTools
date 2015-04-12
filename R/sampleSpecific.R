@@ -118,26 +118,32 @@ extractCoverageForPositions <- function(cov, pos) {
   ans
 }
 
-CallableInOtherFilter <- function(other.cov, calling.filters, min.power = 0.8)
+CallableInOtherFilter <-
+  function(other.cov, calling.filters, min.power = 0.8,
+           p.lower = params(calling.filters$likelihoodRatio)$p.lower)
 {
   function(x) {
-    calculatePowerInOther(x, other.cov, calling.filters) >= min.power
+    calculatePowerInOther(x, other.cov, calling.filters, p.lower) >= min.power
   }
 }
 
-calculatePowerInOther <- function(x, other.cov, calling.filters = hardFilters(x))
+calculatePowerInOther <-
+  function(x, other.cov, calling.filters = hardFilters(x),
+           p.lower = params(calling.filters$likelihoodRatio)$p.lower)
 {
   lr.filter <- calling.filters$likelihoodRatio
   if (is.null(lr.filter))
-    stop("'likelihoodRatio' filter not found in 'calling.filters'")
-  lr.params <- params(lr.filter)
+    f <- 0
+  else
+    f <- lrtFreqCutoff(params(lr.filter)$p.error, params(lr.filter)$p.lower)
   rc.filter <- calling.filters$readCount
   if (is.null(rc.filter))
-    stop("'readCount' filter not found in 'calling.filters'")
+    min.depth <- 0L
+  else
+    min.depth <- params(rc.filter)$min.depth
   other.n <- extractCoverageForPositions(other.cov, resize(x, 1))
-  f <- lrtFreqCutoff(lr.params$p.error, lr.params$p.lower)
-  min.depth <- ceiling(pmax(params(rc.filter)$min.depth, other.n * f))
-  1 - pbinom(min.depth-1L, other.n, lr.params$p.lower)
+  min.depth <- ceiling(pmax(min.depth, other.n * f))
+  1 - pbinom(min.depth-1L, other.n, p.lower)
 }
 
 LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
