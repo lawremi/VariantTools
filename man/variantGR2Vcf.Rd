@@ -50,7 +50,7 @@ variantGR2Vcf(x, sample.id, project = NULL,
 
   Here is the mapping in detail:
   \itemize{
-    \item{The \code{rowData} is formed by dropping the metadata columns
+    \item{The \code{rowRanges} is formed by dropping the metadata columns
       from the \code{GRanges}.
     }
     \item{The \code{colData} consists of a single column,
