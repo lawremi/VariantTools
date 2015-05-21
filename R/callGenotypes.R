@@ -24,7 +24,7 @@ setGeneric("callGenotypes",
 
 phred <- function(p, max = 9999L) {
   ans <- pmin(round(-10 * log10(p)), max)
-  mode(ans) <- "integer"
+  storage.mode(ans) <- "integer"
   ans
 }
 
