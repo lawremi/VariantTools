@@ -24,7 +24,7 @@ export(MinTotalDepthFilter)
 
 export(calculateConcordanceMatrix,
        callVariantConcordance, calculateVariantConcordance)
-export(VariantQAFilters, VariantCallingFilters, VariantTallyParam,
+export(VariantQAFilters, VariantCallingFilters,
        VariantPostFilters, TallyVariantsParam)
 export(variantGR2Vcf)
 

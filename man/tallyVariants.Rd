@@ -35,16 +35,6 @@ TallyVariantsParam(genome,
                    mask = GRanges(), keep_extra_stats = TRUE,
                    read_length = NA_integer_,
                    ...)
-## DEPRECATED:
-VariantTallyParam(genome, readlen = NA,
-                  read_pos_flank_width = 10L,
-                  read_pos_breaks = flankingCycleBreaks(readlen,
-                  read_pos_flank_width),
-                  high_base_quality = 0L,
-                  minimum_mapq = 13L,
-                  variant_strand = 1L, ignore_query_Ns = TRUE,
-                  ignore_duplicates = TRUE,
-                  ...)
 }
 \arguments{
   \item{x}{
@@ -67,12 +57,6 @@ VariantTallyParam(genome, readlen = NA,
   }
   \item{genome}{The genome, either a \code{\link[gmapR]{GmapGenome}} or
     something coercible to one.
-  }
-  \item{readlen, read_pos_flank_width}{ \strong{DEPRECATED}.
-    If \code{read_pos_breaks} is missing, these two arguments are used to
-    generate a \code{read_pos_breaks} for three bins, with the two outside
-    bins having \code{read_pos_flank_width}. If \code{readlen} is
-    \code{NA}, \code{read_pos_breaks} is not generated.
   }
   \item{read_pos_breaks}{The breaks used for tabulating the read positions (read
     positions) at each position. If this information is included (not
