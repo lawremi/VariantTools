@@ -101,6 +101,6 @@ MaskFilter <- function(mask) {
 
 MedianDistFromNearestEndFilter <- function(min.mdfne) {
   function(x) {
-    x$mdfne >= min.mdfne
+    !is.na(x$mdfne) & x$mdfne >= min.mdfne
   }
 }
