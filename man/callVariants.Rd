@@ -81,7 +81,7 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   tallies that pass the calling filters). See the documentation
   of \code{\link[gmapR]{bam_tally}} for complete details.
   
-  For \code{VariantCallingFilters}, a \code{\link[IRanges]{FilterRules}}
+  For \code{VariantCallingFilters}, a \code{\link[S4Vectors]{FilterRules}}
   object with the filters for calling the variants.
 }
 \author{

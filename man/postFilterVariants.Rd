@@ -47,7 +47,7 @@ VariantPostFilters(max.nbor.count = 0.1, whitelist = NULL)
   For \code{postFilterVariants}, a tally \code{GRanges} of the variants that
   pass the filters.
 
-  For \code{VariantPostFilters}, a \code{\link[IRanges]{FilterRules}}
+  For \code{VariantPostFilters}, a \code{\link[S4Vectors]{FilterRules}}
   object with the filters.
 }
 

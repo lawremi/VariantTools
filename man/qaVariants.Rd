@@ -48,7 +48,7 @@ VariantQAFilters(fisher.strand.p.value = 1e-4, min.mdfne = 10L)
   For \code{qaVariants}, a tally \code{GRanges} of the variants that
   pass the QA checks.
 
-  For \code{VariantQAFilters}, a \code{\link[IRanges]{FilterRules}}
+  For \code{VariantQAFilters}, a \code{\link[S4Vectors]{FilterRules}}
   object with the QA and sanity filters.
 }
 
