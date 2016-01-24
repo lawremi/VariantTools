@@ -27,3 +27,10 @@ chunkRange <- function(which, n) {
                            width = width(chunks)))
 
 }
+
+## some internal compatibility wrappers for older versions
+rawTotalDepth <- function(x) {
+    if (!is.null(x$raw.count.total))
+        x$raw.count.total
+    else x$count.total
+}

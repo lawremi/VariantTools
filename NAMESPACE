@@ -39,8 +39,5 @@ export(callWildtype, minCallableCoverage)
 export(matchVariants, "%variant_in%", extractCoverageForPositions)
 export(pileupVariants)
 
-## compatibility
-export(makeVRangesFromVariantGRanges)
-
 export(CallGenotypesParam)
 exportMethods(callGenotypes)
