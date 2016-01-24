@@ -68,7 +68,7 @@ ReadPositionTTestFilter <- function(p.value.cutoff = 1e-4) {
   function(x) {
     p <- with(mcols(x), t.test_welch(read.pos.mean, read.pos.mean.ref,
                                      read.pos.var, read.pos.var.ref,
-                                     rawAltDepth(x), rawTotalDepth(x)))
+                                     rawDepth(x), totalDepth(x)))
     ans <- p > p.value.cutoff
     ans[is.na(ans)] <- TRUE
     ans
