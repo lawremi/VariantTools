@@ -11,6 +11,8 @@
 ### provided by the gmapR package, which would depend on VariantTools,
 ### instead of the other way around.
 
+### Or, tallyVariants() could move to VariantAnnotation.
+
 setGeneric("tallyVariants", function(x, ...) standardGeneric("tallyVariants"))
 
 defaultBPPARAM <- function() registered()[[1]]

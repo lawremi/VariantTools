@@ -34,6 +34,8 @@ TallyVariantsParam(genome,
                    ignore_duplicates = TRUE,
                    mask = GRanges(), keep_extra_stats = TRUE,
                    read_length = NA_integer_,
+                   read_pos = !is.null(read_pos_breaks),
+                   high_nm_score = NA_integer_,
                    ...)
 }
 \arguments{
@@ -95,6 +97,14 @@ TallyVariantsParam(genome,
     specified, an attempt is made to guess the read length from a random
     sample of the BAM file. If read length is found to be variable,
     statistics depending on the read length are not calculated.
+  }
+  \item{read_pos}{Whether to tally read positions, which can be
+    computationally intensive.
+  }
+  \item{high_nm_score}{If not \code{NA},
+    counts of reads with NM (mismatch count)
+    score equal to or greater are returned in the
+    \code{count.high.nm} and \code{count.high.nm.ref} columns.
   }
   \item{keep_extra_stats}{Whether to keep various summary statistics
     generated from the tallies; setting this to FALSE will save memory.
