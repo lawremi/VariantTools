@@ -25,25 +25,6 @@ setGeneric("callSampleSpecificVariants", function(case, control, ...) {
 ## - Maybe discard tumor variants that look het, but risky;
 ##   analysts always have access to frequencies.
 
-setMethod("callSampleSpecificVariants", c("GenomicRanges", "GenomicRanges"),
-          function(case, control, control.cov,
-                   calling.filters = VariantCallingFilters(),
-                   post.filters = FilterRules(),
-                   ...)
-          {
-            stop("callSampleSpecificVariants no longer supports variant ",
-                 "GRanges: please use VRanges instead")
-            case.called <- callVariants(case, calling.filters, post.filters)
-            control <- makeVRangesFromVariantGRanges(control, genome(control))
-            filters <- SampleSpecificVariantFilters(control,
-                                                    control.cov,
-                                                    calling.filters,
-                                                    ...)
-            case.specific <- subsetByFilter(case.called, filters)
-            annotateWithControlDepth(case.specific, control, control.cov,
-                                     raw=TRUE)
-          })
-
 setMethod("callSampleSpecificVariants", c("VRanges", "VRanges"),
           function(case, control, control.cov, ...)
           {
@@ -149,24 +130,27 @@ calculatePowerInOther <-
 LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
 {
   function(x) {
-    x <- annotateWithControlDepth(x, other, other.cov, raw=TRUE)
+      ## NOTE: this was once based on the raw (not quality filtered)
+      ## counts, but bam_tally is no longer giving us those for the alts.
+    x <- annotateWithControlDepth(x, other, other.cov)
     p <- with(x, pbinom(control.alt.depth, control.total.depth,
-                        raw.count / raw.count.total))
+                        altDepth / totalDepth))
     p < p.value
   }
 }
 
-annotateWithControlDepth <- function(case, control, control.cov, raw = FALSE) {
+annotateWithControlDepth <- function(case, control, control.cov) {
   m <- match(case, control)
-  .altDepth <- if (raw) rawAltDepth else altDepth
-  control.alt.depth <- as.vector(.altDepth(control))[m]
+  control.alt.depth <- as.vector(altDepth(control))[m]
   control.alt.depth[is.na(control.alt.depth)] <- 0L
-  .totalDepth <- if (raw) rawTotalDepth else totalDepth 
-  control.total.depth <- as.vector(.totalDepth(control))[m]
-  control.total.depth[is.na(m)] <-
-    extractCoverageForPositions(control.cov, resize(case[is.na(m)], 1))
+  control.total.depth <- as.vector(totalDepth(control))[m]
+  control.raw.total.depth <- as.vector(rawTotalDepth(control))[m]
+  control.raw.total.depth[is.na(m)] <-
+      extractCoverageForPositions(control.cov, resize(case[is.na(m)], 1))
+  control.alt.depth[is.na(m)] <- control.raw.total.depth[is.na(m)]
   case$control.alt.depth <- control.alt.depth
   case$control.total.depth <- control.total.depth
+  case$control.raw.total.depth <- control.raw.total.depth
   case
 }
 
