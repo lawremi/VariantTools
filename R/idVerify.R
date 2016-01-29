@@ -72,19 +72,19 @@ callVariantConcordance <- function(concordanceMatrix,
   ## test if connected components are cliques of
   ##at least 2 vertices
 
-  n <- sum(elementLengths(concordantCliques))
+  n <- sum(elementNROWS(concordantCliques))
   vstate <- rep("non-concordant", n)
   names(vstate) <- unlist(concordantCliques)
 
   ##if there are multiple cliques of size 2 or greater, the entire set
   ##is undecidable
-  numMultinodeCliques <- sum(elementLengths(concordantCliques) >= 2)
+  numMultinodeCliques <- sum(elementNROWS(concordantCliques) >= 2)
   if (numMultinodeCliques >= 2L) {
     vstate <- rep("undecidable", n)
   } else if (numMultinodeCliques == 1L) {
     ##if in the clique with at least two elements, is concordant
     multinodeCliqueElements <-
-      concordantCliques[[which(elementLengths(concordantCliques) >= 2)]]
+      concordantCliques[[which(elementNROWS(concordantCliques) >= 2)]]
     vstate[multinodeCliqueElements] <- "concordant"
   }
   return(vstate)

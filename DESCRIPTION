@@ -6,7 +6,7 @@ Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Tools for detecting, filtering, calling, comparing and
         plotting variants.
-Depends: S4Vectors (>= 0.0.2), IRanges (>= 1.99.2), GenomicRanges (>= 1.17.7),
+Depends: S4Vectors (>= 0.9.25), IRanges (>= 1.99.2), GenomicRanges (>= 1.17.7),
         VariantAnnotation (>= 1.11.16), methods
 Imports: Rsamtools (>= 1.17.6), BiocGenerics, Biostrings, parallel,
         gmapR (>= 1.13.4), GenomicFeatures (>= 1.17.13), Matrix,

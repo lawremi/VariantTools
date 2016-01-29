@@ -28,7 +28,7 @@ tally2GR<- function(bamfiles,
     } else {      
       counts <- strsplit(tab[[4]], " ", fixed=TRUE)
       
-      counts_part <- PartitioningByWidth(elementLengths(counts))
+      counts_part <- PartitioningByWidth(elementNROWS(counts))
       
       chr <- rep(tab[[1]], width(counts_part))
       pos <- rep(tab[[2]], width(counts_part))
@@ -53,7 +53,7 @@ tally2GR<- function(bamfiles,
       counts_flat[zero_count] <- paste(counts_flat[zero_count], "(0@NA)", sep="")
       cycles <- strsplit(sub(".*\\((.*?)\\).*", "\\1", counts_flat), ",", 
                          fixed=TRUE)
-      ncycles <- elementLengths(cycles)
+      ncycles <- elementNROWS(cycles)
       cycles_flat <- unlist(cycles, use.names=FALSE)
       cycles_counts <- unlist(strsplit(cycles_flat, "@", fixed=TRUE), 
                               use.names=FALSE)
@@ -97,7 +97,7 @@ tally2GR<- function(bamfiles,
       count.neg.ref <- rep(count.neg[ref_rows], width(counts_part))
       quals <- strsplit(sub(".*\\)\\((.*?)\\).*", "\\1", counts_flat), ",", 
                         fixed=TRUE)
-      nquals <- elementLengths(quals)
+      nquals <- elementNROWS(quals)
 
       count_above_thresh <- lapply(quals, function(x){
         mat <-matrix(unlist(strsplit(x, "Q", fixed=TRUE), 
