@@ -14,5 +14,4 @@ Imports: Rsamtools (>= 1.17.6), BiocGenerics, Biostrings, parallel,
 Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph
 License: Artistic-2.0
 LazyLoad: yes
-Packaged: 2012-09-29 05:23:19 UTC; larman
 biocViews: Genetics, GeneticVariability, Sequencing
