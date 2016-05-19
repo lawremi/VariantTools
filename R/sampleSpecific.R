@@ -147,7 +147,7 @@ annotateWithControlDepth <- function(case, control, control.cov) {
   control.raw.total.depth <- as.vector(rawTotalDepth(control))[m]
   control.raw.total.depth[is.na(m)] <-
       extractCoverageForPositions(control.cov, resize(case[is.na(m)], 1))
-  control.alt.depth[is.na(m)] <- control.raw.total.depth[is.na(m)]
+  control.total.depth[is.na(m)] <- control.raw.total.depth[is.na(m)]
   case$control.alt.depth <- control.alt.depth
   case$control.total.depth <- control.total.depth
   case$control.raw.total.depth <- control.raw.total.depth
