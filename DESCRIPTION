@@ -1,7 +1,7 @@
 Package: VariantTools
 Type: Package
 Title: Tools for Working with Genetic Variants
-Version: 1.16.0
+Version: 1.17.0
 Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Tools for detecting, filtering, calling, comparing and
