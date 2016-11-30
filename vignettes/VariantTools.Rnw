@@ -48,7 +48,7 @@ options(width=72)
 This vignette outlines the basic usages of the \VariantTools package
 and the general workflow for loading data, calling single sample
 variants and tumor-specific somatic mutations or other sample-specific
-variant types (eg RNA editing). Most of the functions operate on
+variant types (e.g., RNA editing). Most of the functions operate on
 alignments (BAM files) or datasets of called variants. The user is
 expected to have already aligned the reads with a separate tool, e.g.,
 \software{GSNAP} via \Rpackage{gmapR}.
@@ -73,7 +73,7 @@ tally.param <- TallyVariantsParam(gmapR::TP53Genome(),
                                   which = range(p53) + 5e4,
                                   indels = TRUE, read_length = 75L)
 called.variants <- callVariants(bam, tally.param)
-@ %$
+@
 %
 In the above, we load the genome corresponding to the human p53 gene
 region and the H1993 BAM file (stripped down to the same region). We

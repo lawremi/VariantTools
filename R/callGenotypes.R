@@ -110,7 +110,7 @@ addGenotypeRuns <- function(variants, cov, which, param) {
 setClass("CallGenotypesParam",
          representation(gq.breaks = "numeric",
                         p.error = "numeric",
-                        genome = "GmapGenome",
+                        genome = "ANY",
                         which = "GenomicRangesList"))
 
 CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
@@ -118,6 +118,14 @@ CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
                                which = tileGenome(seqinfo(genome), ntile=ntile),
                                ntile = 100L)
 {
+  if (!hasMethod("getSeq", class(genome))) {
+    if (!requireNamespace("gmapR")) {
+        stop("no getSeq() method for 'genome' ",
+             "and the gmapR package is not installed to convert it to ",
+             "a GmapGenome object")
+    }
+    genome <- gmapR::GmapGenome(genome)
+  }
   if (any(is.na(gq.breaks)) || any(gq.breaks < 0)) {
     stop("'gq.breaks' values must be non-negative and non-NA")
   }
@@ -133,8 +141,7 @@ CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
 
 setMethod("callGenotypes", c("VRanges", "BigWigFile"),
           function(variants, cov,
-                   param =
-                     CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+                   param = CallGenotypesParam(variants),
                    BPPARAM = defaultBPPARAM())
           {
             sample <- runValue(sampleNames(variants))
@@ -158,8 +165,7 @@ setMethod("callGenotypes", c("VRanges", "BigWigFile"),
 
 setMethod("callGenotypes", c("TabixFile", "BigWigFile"),
           function(variants, cov,
-                   param =
-                     CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+                   param = CallGenotypesParam(variants),
                    BPPARAM = defaultBPPARAM())
           {
             which <- as.list(unlist(param@which))

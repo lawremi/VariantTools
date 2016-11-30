@@ -24,11 +24,16 @@ setMethod("tallyVariants", "BamFile",
             if (!missing(param) && length(list(...)) > 0L) {
               warning("arguments in '...' are ignored when passing 'param'")
             }
+            if (!is(param, "TallyVariantsParam")) {
+              stop("'param' must be a TallyVariantsParam")
+            }
             tally_region <- function(x, which, param) {
-              iit <- bam_tally(x, param@bamTallyParam, which = which)
-              ans <- variantSummary(iit, param@read_pos_breaks,
-                                    param@bamTallyParam@variant_strand == 0L,
-                                    param@read_length, param@high_nm_score)
+              iit <- gmapR::bam_tally(x, param@bamTallyParam, which = which)
+              keep_ref_rows <- param@bamTallyParam@variant_strand == 0L  
+              ans <- gmapR::variantSummary(iit, param@read_pos_breaks,
+                                           keep_ref_rows,
+                                           param@read_length,
+                                           param@high_nm_score)
               ## usage of start() is intentional to avoid dropping indels
               ## that extend outside of window
               ans <- ans[start(ans) >= start(which) & start(ans) <= end(which)]
@@ -56,13 +61,29 @@ setMethod("tallyVariants", "character", function(x, ...) {
   tallyVariants(BamFile(x), ...)
 })
 
+.valid_TallyVariantsParam <- function(object) {
+    c(if (!is(object@bamTallyParam, "BamTallyParam"))
+          "@bamTallyParam must be a BamTallyParam",
+      if (anyNA(object@read_pos_breaks))
+          "@read_pos_breaks must not contain NAs",
+      if (!isTRUEorFALSE(object@keep_extra_stats))
+          "@keep_extra_stats must be TRUE or FALSE",
+      if (!isSingleNumberOrNA(object@read_length))
+          "@read_length must be a single number or NA",
+      if (!isSingleNumberOrNA(object@high_nm_score))
+          "@high_nm_score must be a single number or NA")
+}
+
+setClassUnion("integerORNULL", c("integer", "NULL"))
+
 setClass("TallyVariantsParam",
-         representation(bamTallyParam = "BamTallyParam",
+         representation(bamTallyParam = "ANY",
                         read_pos_breaks = "integerORNULL",
                         mask = "GenomicRanges",
                         keep_extra_stats = "logical",
                         read_length = "integer",
-                        high_nm_score = "integer"))
+                        high_nm_score = "integer"),
+         validity=.valid_TallyVariantsParam)
 
 TallyVariantsParam <- function(genome,
                                read_pos_breaks = NULL,
@@ -91,7 +112,9 @@ TallyVariantsParam <- function(genome,
                          read_pos = read_pos,
                          nm = !is.na(high_nm_score),
                          ...)
-  bam.tally.param <- do.call(BamTallyParam, bam.tally.args)
+  if (!requireNamespace("gmapR"))
+      stop("tallying requires the gmapR package")
+  bam.tally.param <- do.call(gmapR::BamTallyParam, bam.tally.args)
   new("TallyVariantsParam", bamTallyParam = bam.tally.param,
       read_pos_breaks = as.integer(read_pos_breaks),
       mask = mask, keep_extra_stats = as.logical(keep_extra_stats),

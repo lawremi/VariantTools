@@ -10,7 +10,6 @@ importFrom(Biostrings, DNAStringSet, detail, DNA_BASES)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich, ApplyPileupsParam,
            PileupFiles, plpWhat, "plpWhat<-", applyPileups)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
-importFrom(gmapR, bam_tally, BamTallyParam, GmapGenome, variantSummary)
 importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
