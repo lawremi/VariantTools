@@ -1,0 +1,516 @@
+#+TITLE: Variant Calling with R/Bioconductor
+#+AUTHOR: Michael Lawrence
+
+#+OPTIONS: toc:t H:3
+
+#+startup: beamer
+#+LaTeX_CLASS: beamer
+
+#+PROPERTY: exports both
+#+PROPERTY: results none
+#+PROPERTY: eval no-export
+#+PROPERTY: session *R:VariantToolsTutorial*
+#+PROPERTY: tangle yes
+
+#+BEGIN_LaTeX
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+#+END_LaTeX
+
+* Introduction to the dataset
+** Experiment
+*** Goals and Scope
+    * Determine the genotype of a sample
+    * Call *single nucleotide variants vs. reference* from
+      high-throughput sequencing data, including WGS, Exome-seq and
+      (eventually) RNA-seq
+    * Support users to filter the variant calls according to the
+      biological context and questions of interest
+    * Be sensitive to low frequency variants
+      * Be robust to aneuploidy, cell mixtures, contamination
+      * Permit estimation of sample heterogeneity
+
+*** Variant Calling Process
+**** Data Generation                                                :B_block:
+     :PROPERTIES:
+     :BEAMER_env: block
+     :END:
+     1. Library prep (PCR)
+     2. Sequencing
+     3. Alignment
+
+     Each of these steps will introduce noise that requires filtering.
+
+**** Variant Calling                                                :B_block:
+     :PROPERTIES:
+     :BEAMER_env: block
+     :END:
+     #+ATTR_LATEX: :width 10cm
+     [[./fig/VariantCallingProcess.pdf]]
+
+*** Biological Considerations
+    These generate a range of variant frequencies:
+    * Aneuploidy
+    * Heterogeneity
+    * Contamination
+
+    Thus, /there is no "one-p-fits-all" solution to variant calling/.
+
+*** Existing Solutions
+    Other tools for calling variants vs. reference include:
+    | =samtools mpileup= | Generates statitics useful for variant calling |
+    | =vcfutils=         | Perl script for filtering =mpileup= output     |
+    | =Varscan2=         | Series of adhoc filters on =mpileup= output    |
+    | =GATK=             | Oriented towards genotyping in diploid samples |
+
+    There are also comparative (somatic mutation) callers (strelka,
+    MuTect, etc), but we are focused on calling vs. reference.
+
+*** Benchmark Dataset
+**** Text                                                             :BMCOL:
+     :PROPERTIES:
+     :BEAMER_col: 0.5
+     :END:
+     * To develop an algorithm, we need to benchmark its
+       sensitivity and specificity, but no gold standard
+       exists.
+
+     * *Biochemically* mixed two HapMap daughter cell lines
+       in different proportions to realistically simulate
+       variant frequencies expected from complex
+       samples. Sequenced each genome with 75bp reads.
+
+**** Allison's picture                                                :BMCOL:
+     :PROPERTIES:
+     :BEAMER_col: 0.5
+     :END:
+    #+attr_LaTeX: :height 8.5cm
+    [[./fig/mix.pdf]]
+
+*** Sequencing Output: 23-24X average coverage
+       | Sample | % CEU | % YRI | # Reads (analyzed) | Avg. Coverage |
+       |--------+-------+-------+--------------------+---------------|
+       |      1 |    90 |    10 | 461,449,560        |          22.3 |
+       |      2 |    90 |    10 | 475,567,437        |          23.0 |
+       |      3 |    90 |    10 | 460,196,498        |          22.3 |
+       |      4 |    50 |    50 | 489,166,262        |          23.7 |
+       |      5 |    50 |    50 | 442,737,941        |          21.4 |
+       |      6 |    50 |    50 | 430,779,023        |          20.8 |
+       |      7 |    10 |    90 | 496,958,600        |          24.0 |
+       |      8 |    10 |    90 | 494,245,570        |          23.9 |
+       |      9 |    10 |    90 | 534,458,340        |          25.8 |
+
+*** Genotypes
+    | Cell Line | Trio | Source | Ref    | Coverage | Total Het/Hom   |
+    |-----------+------+--------+--------+----------+-----------------|
+    | NA12878   | CEU  | Broad  | hg19   | 64X      | 2451814/1410358 |
+    | NA12878   | CEU  | 1000G  | *hg18* | 61X      | 1703706/1061942 |
+    | CEU Union | CEU  | Both   |        |          | 2424095/1427209 |
+    | NA19240   | YRI  | 1000G  | *hg18* | 66X      | 2227251/1108784 |
+
+**** 10/90 combinations                                       :B_block:BMCOL:
+     :PROPERTIES:
+     :BEAMER_col: 0.5
+     :BEAMER_env: block
+     :END:
+    | 10/90 |    0 |  0.5 |    1 |
+    |-------+------+------+------|
+    |     0 |    - | 0.45 | 0.90 |
+    |   0.5 | 0.05 | 0.50 | 0.95 |
+    |     1 | 0.10 | 0.55 | 1.0  |
+
+**** 50/50 combinations                                       :B_block:BMCOL:
+     :PROPERTIES:
+     :BEAMER_col: 0.5
+     :BEAMER_env: block
+     :END:
+    | 50/50 |    0 |  0.5 |    1 |
+    |-------+------+------+------|
+    |     0 |    - | 0.25 | 0.50 |
+    |   0.5 | 0.25 | 0.50 | 0.75 |
+    |     1 | 0.50 | 0.75 | 1.0  |
+
+*** QC of mixture ratios
+    #+attr_LaTeX: :width 11cm
+    [[./fig/boxplot-obs-freq-sample-ceu-all.pdf]]
+
+*** QC of variant frequencies
+    #+attr_LaTeX: :width 11cm
+    [[./fig/boxplot-expected-obs-freq-source-merged-vt.pdf]]
+
+** Algorithm
+*** Overview
+     #+attr_LaTeX: :width 11cm
+     [[./fig/workflow.pdf]]
+
+# *** Variant Calling Filters
+#      #+attr_LaTeX: :width 8cm
+#      [[./fig/variant-calling-filters.pdf]]
+
+# *** Post-filters
+#     #+attr_LaTeX: :width 3.5cm
+#     [[./fig/post-filters.pdf]]
+
+** Performance
+*** Definitions
+    #+attr_LaTeX: :height 8cm
+    [[./fig/errors.pdf]]
+
+*** FNR high at low/high coverage
+    #+attr_LaTeX: :width 11cm
+    [[./fig/bar-fnr-cov-bin-merged-all.pdf]]
+
+# *** Errors at high coverage
+#     #+ATTR_LaTeX: :width 11cm
+#     [[./fig/igv_high_cov_neg.png]]
+
+*** Recovery rate (1 - FNR) vs. GATK
+    #+attr_LaTeX: :width 11cm
+    [[./fig/dot-percent-recovered-caller-merged-20-all.pdf]]
+
+*** FDR by coverage bin
+    #+attr_LaTeX: :width 11cm
+    [[./fig/bar-fdr-cov-bin-merged-all.pdf]]
+
+*** Evidence that some FP are real
+**** Columns                                                      :B_columns:
+     :PROPERTIES:
+     :BEAMER_env: columns
+     :BEAMER_OPT: T
+     :END:
+
+***** Replication                                             :B_block:BMCOL:
+      :PROPERTIES:
+      :BEAMER_col: 0.4
+      :BEAMER_env: block
+      :END:
+      #+attr_LaTeX: :width 5cm
+      [[./fig/hist-fdr-rep-count-all.pdf]]
+
+***** dbSNP Concordance                                       :B_block:BMCOL:
+      :PROPERTIES:
+      :BEAMER_col: 0.6
+      :BEAMER_env: block
+      :END:
+      |         | NOT dbSNP | IN dbSNP |
+      |---------+-----------+----------|
+      | 1 Rep   |    695468 |   120266 |
+      | 2+ Reps |    391879 |   781940 |
+
+*** Selected FP: GATK vs. VariantTools
+    Selected FPs at reasonable (45-85X) coverage, outside of
+    structural variants and multi-mapping regions.
+
+    #+ATTR_LaTeX: :width 7cm
+    [[./fig/bar-caller-freq-summary-dbSNP-count-all.pdf]]
+
+*** Acknowledgements
+      Leonard Goldstein \\
+      Melanie Huntley \\
+      Yi Cao \\
+      Robert Gentleman
+
+* Interactive demonstration
+** Overview
+*** Overview
+**** Data
+     Subset of the mixture data consisting only of the 50/50
+     samples, and only reads aligning within 1 Mb of p53.
+
+**** Strategy
+     1. Align sequences to the p53 region.
+     2. Generate tallies (pileup) from the alignments.
+     3. Call/filter variants.
+     4. Perform exploratory analysis on the calls and concordance with
+        canonical genotypes.
+
+** Alignment
+*** The *gmapR* package
+    *gmapR* is an R interface to the GMAP/GSTRUCT suite of alignment
+    tools, including:
+    * GSNAP :: a short read aligner distinguished by its ability to
+               generate spliced alignments from RNA-seq data (also
+               handles DNA)
+    * =bam_tally= :: summarizes alignments by counting A/C/G/T (and
+                   optionally indels) at each position and tabulating
+                   by strand, read position and quality
+
+*** Configure GSNAP parameters
+    * GSNAP is a complex tool with a complex interface, consisting of
+      many command-line parameters.
+    * *gmapR* supports all parameters, while providing a high-level
+      interface with reasonable defaults.
+    * The parameters are stored in a =GsnapParams= object.
+    * We construct a simple =GsnapParams= for generating unique DNA
+      alignments to ~2Mb region around p53:
+      #+begin_src R
+      library(gmapR)
+      param <- GsnapParam(TP53Genome(), unique_only = TRUE,
+                          molecule = "DNA")
+      #+end_src
+
+*** Align with GSNAP
+    We find our FASTQ files inside the *VariantToolsTutorial* package:
+    #+begin_src R
+      extdata.dir <- system.file("extdata",
+                                 package="VariantToolsData")
+      first.fastq <- dir(extdata.dir, "first.fastq",
+                         full.names=TRUE)
+      last.fastq <- dir(extdata.dir, "last.fastq",
+                        full.names=TRUE)
+    #+end_src
+
+    And generate the GSNAP alignments (for the first sample), which
+    *gmapR* automatically converts to indexed BAMs:
+    #+begin_src R
+      output <- gsnap(first.fastq[1], last.fastq[1], param)
+      bam <- as(output, "BamFile")
+    #+end_src
+
+** Variant calling
+*** The *VariantTools* package
+    *VariantTools* is a set of utilities for:
+    * Tallying alignments (via *gmapR*)
+    * Annotating tallies
+    * Filtering tallies into variant calls
+    * Exporting tallies to VCF (actually *VariantAnnotation*)
+    * Wildtype calling (for a specific set of filters)
+    * Sample ID verification via rudimentary genotyping
+
+*** Generate nucleotide tallies
+    The underlying =bam_tally= from GSTRUCT accepts a number of
+    parameters, which we specify as a =TallyVariantsParam= object. The
+    genome is required; we also mask out the repeats.
+    #+begin_src R
+      library(VariantTools)
+      data(repeats, package = "VariantToolsData")
+      genome(repeats) <- genome(TP53Genome())
+      param <- TallyVariantsParam(TP53Genome(), mask = repeats)
+    #+end_src
+
+    Tallies are generated via the =tallyVariants= function:
+    #+begin_src R
+      tallies <- tallyVariants(bam, param)
+    #+end_src
+
+*** Loading and combining three samples worth of tallies
+    The alignments and tallies were generated for all three
+    replicates of the 50/50 mixture and placed in the package.
+    #+begin_src R
+    data(tallies, package = "VariantToolsData")
+    #+end_src
+
+    We combine the samples in two different ways: stacked (long form)
+    and merged (depths summed).
+    #+begin_src R
+      stacked.tallies <- stackSamples(tallies)
+      merged.tallies <- sumDepths(tallies)
+      sampleNames(merged.tallies) <- "merged"
+    #+end_src
+
+*** Configure filters
+    *VariantTools* implements its filters within the =FilterRules=
+    framework from *IRanges*. The default variant calling filters are
+    constructed by =VariantCallingFilters=:
+    #+begin_src R
+    calling.filters <- VariantCallingFilters()
+    #+end_src
+
+    Post-filters are filters that attempt to remove anomalies from
+    the called variants:
+    #+begin_src R
+    post.filters <- VariantPostFilters()
+    #+end_src
+
+*** Filter tallies into variant calls
+    The filters are then passed to the =callVariants= function:
+    #+begin_src R
+      merged.variants <- callVariants(merged.tallies,
+                                      calling.filters,
+                                      post.filters)
+    #+end_src
+    Or more simply in this case:
+    #+begin_src R
+      merged.variants <- callVariants(merged.tallies)
+      stacked.variants <- callVariants(stacked.tallies)
+    #+end_src
+
+*** Or, call variants directly from a BAM
+    #+begin_src R
+    variants <- callVariants(bam, param)
+    #+end_src
+
+**** Note                                                      :B_alertblock:
+     :PROPERTIES:
+     :BEAMER_env: alertblock
+     :END:
+     Convenient for simple exercises, but does not facilitate
+     diagnostics
+
+** Exploratory analysis
+*** Alternative allele frequencies
+    Check the quality of our mixtures:
+    #+begin_src R :results output graphics :file fig/density-altFraction.pdf
+      stacked.variants$altFraction <-
+        altDepth(stacked.variants) / totalDepth(stacked.variants)
+      library(ggplot2)
+      qplot(altFraction, geom = "density", color = sampleNames,
+            data = as.data.frame(stacked.variants))
+    #+end_src
+
+*** Annotating variants with genotype concordance
+    We want to see how well our calls recapitulate the genotypes from
+    1000G; we have these prepared as a dataset:
+    #+begin_src R
+      data(geno, package = "VariantToolsData")
+    #+end_src
+
+    Merge the expected frequencies of each alt with the
+    variant calls:
+    #+begin_src R
+      naToZero <- function(x) ifelse(is.na(x), 0L, x)
+      addExpectedFreqs <- function(x) {
+        expected.freq <- geno$expected.freq[match(x, geno)]
+        x$expected.freq <- naToZero(expected.freq)
+        x
+      }
+      stacked.variants <- addExpectedFreqs(stacked.variants)
+      merged.variants <- addExpectedFreqs(merged.variants)
+    #+end_src
+
+*** Annotating the genotypes with merged variant calls
+    # EXCERCISE?
+    Annotate the genotypes for whether an alt allele was called in
+    the merged data, and also add the alt and total depth:
+    #+begin_src R :results replace
+      softFilterMatrix(geno) <-
+        cbind(in.merged = geno %in% merged.variants)
+      mean(called(geno))
+    #+end_src
+
+    #+RESULTS:
+    : 0.710044395116537
+
+    #+begin_src R
+      m <- match(geno, merged.tallies)
+      altDepth(geno) <- naToZero(altDepth(merged.tallies)[m])
+      totalDepth(geno) <- naToZero(totalDepth(merged.tallies)[m])
+    #+end_src
+
+*** False negatives: which filter to blame?
+    Apply the calling filters to our FN and summarize the results:
+    #+begin_src R :results value replace :colnames yes
+      fn.geno <- geno[!called(geno)]
+      fn.geno <- resetFilter(fn.geno)
+      filters <- hardFilters(merged.variants)[3:4]
+      fn.geno <- softFilter(fn.geno, filters)
+      t(summary(softFilterMatrix(fn.geno)))
+    #+end_src
+
+    #+RESULTS:
+    | <initial> | readCount | likelihoodRatio | <final> |
+    |-----------+-----------+-----------------+---------|
+    |      1021 |         0 |               9 |       0 |
+
+    The default is to evaluate the filters in parallel, but serial
+    evaluation is also supported:
+    #+begin_src R :results value replace :colnames yes
+      fn.geno <- resetFilter(fn.geno)
+      fn.geno <- softFilter(fn.geno, filters, serial = TRUE)
+      t(summary(softFilterMatrix(fn.geno)))
+    #+end_src
+
+    #+RESULTS:
+    | <initial> | readCount | likelihoodRatio | <final> |
+    |-----------+-----------+-----------------+---------|
+    |      1021 |         0 |               0 |       0 |
+
+*** dbSNP concordance
+    Import a VRanges from (p53) dbSNP VCF:
+    #+begin_src R
+      vcfPath <- system.file("extdata", "dbsnp-p53.vcf.gz",
+                             package = "VariantToolsData")
+      param <- ScanVcfParam(fixed = "ALT", info = NA, geno = NA)
+      dbSNP <- as(readVcf(vcfPath, param, genome = "TP53_demo"),
+                  "VRanges")
+      dbSNP <- dbSNP[!isIndel(dbSNP)]
+    #+end_src
+
+    And annotate the stacked variants for concordance:
+    #+begin_src R :results value replace :colnames yes :rownames yes
+      stacked.variants$dbSNP <- stacked.variants %in% dbSNP
+      xtabs(~ dbSNP + expected.freq, mcols(stacked.variants))
+    #+end_src
+
+    #+RESULTS:
+    |       |    0 | 0.25 |  0.5 | 0.75 |   1 |
+    |-------+------+------+------+------+-----|
+    | FALSE | 2233 |   25 |    0 |    0 |   0 |
+    | TRUE  |  917 | 3497 | 2023 |  891 | 924 |
+
+*** Replication over the samples
+    Tabulate the stacked variants over the samples:
+    #+begin_src R :results value replace :colnames yes :rownames yes
+      tabulated.variants <- tabulate(stacked.variants)
+      xtabs(~ dbSNP + sample.count, mcols(tabulated.variants))
+    #+end_src
+
+    #+RESULTS:
+    |       |    1 |   2 |    3 |
+    |-------+------+-----+------|
+    | FALSE | 1473 | 241 |  101 |
+    | TRUE  |  116 | 435 | 2422 |
+
+*** Visualizing putative FPs: IGV
+    IGV is an effective tool for exploring alignment issues and other
+    variant calling anomalies; *SRAdb* drives IGV from R.
+
+    To begin, we create a connection:
+    #+begin_src R
+      library(SRAdb)
+      startIGV("lm")
+      sock <- IGVsocket()
+    #+end_src R
+
+*** Exporting our calls as VCF
+    IGV will display variant calls as VCF:
+    #+begin_src R
+      mcols(merged.variants) <- NULL
+      vcf <- writeVcf(sort(merged.variants),
+                      "merged.variants.vcf",
+                      index = TRUE)
+      vcf <- tools::file_path_as_absolute(vcf)
+    #+end_src
+
+*** Creating an IGV session
+    Create an IGV session with our VCF, BAMs and custom p53 genome:
+    #+begin_src R
+      extdata <- system.file("extdata",
+                             package = "VariantToolsTutorial")
+      bams <- tools::list_files_with_exts(extdata, "bam")
+      p53fasta <- tempfile("p53", fileext = ".fasta")
+      rtracklayer::export(TP53Genome(), p53fasta)
+      session <- IGVsession(c(bams, vcf), "session.xml",
+                            p53fasta)
+    #+end_src
+
+    Load the session:
+    #+begin_src R
+     IGVload(sock, session)
+    #+end_src
+
+*** Browsing regions of interest
+    IGV will (manually) load BED files as a list of bookmarks:
+    #+begin_src R
+      rtracklayer::export(merged.variants, "roi.bed")
+    #+end_src
