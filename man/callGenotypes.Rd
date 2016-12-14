@@ -112,8 +112,6 @@ CallGenotypesParam(genome,
   Gabriel S, Daly M, DePristo MA, 2010 GENOME RESEARCH 20:1297-303.
 }
 \examples{
-## generate tallies
-library(VariantTools)
 bams <- LungCancerLines::LungCancerBamFiles()
 tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
                                   high_base_quality = 23L,
