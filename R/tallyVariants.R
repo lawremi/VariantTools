@@ -46,6 +46,8 @@ setMethod("tallyVariants", "BamFile",
               which <- tileGenome(seqlengths(param@bamTallyParam@genome),
                                   bpworkers(BPPARAM))
               which <- unlist(which, use.names=FALSE)
+            } else if (length(which) == 1L) {
+              which <- tile(which, n=bpworkers(BPPARAM))[[1L]]
             }
             which <- as.list(which)
             ans <- bplapply(which, tally_region, x = x, param = param,
