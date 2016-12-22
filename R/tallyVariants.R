@@ -41,16 +41,19 @@ setMethod("tallyVariants", "BamFile",
                 mcols(ans) <- NULL
               ans[!(ans %over% param@mask)]
             }
+            tally_region_job <- function(x, which, param) {
+                do.call(c, unname(lapply(as.list(which), tally_region,
+                                         x=x, param=param)))
+            }
             which <- param@bamTallyParam@which
             if (length(which) == 0L) {
               which <- tileGenome(seqlengths(param@bamTallyParam@genome),
                                   bpworkers(BPPARAM))
-              which <- unlist(which, use.names=FALSE)
             } else if (length(which) == 1L) {
               which <- tile(which, n=bpworkers(BPPARAM))[[1L]]
             }
-            which <- as.list(which)
-            ans <- bplapply(which, tally_region, x = x, param = param,
+            which <- as(which, "List")
+            ans <- bplapply(which, tally_region_job, x = x, param = param,
                             BPPARAM = BPPARAM)
             do.call(c, unname(ans))
           })
