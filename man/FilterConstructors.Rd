@@ -55,14 +55,12 @@ DepthFETFilter(control, control.cov, p.value.cutoff = 0.05)
 
 \examples{
   ## Find case-specific variants in a case/control study
-  
   bams <- LungCancerLines::LungCancerBamFiles()
-  tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                      high_base_quality = 23L,
-                                      which = gmapR::TP53Which())
 
-  case <- callVariants(bams$H1993, tally.param)
-  control <- callVariants(bams$H2073, tally.param)
+  data(vignette)
+  case <- callVariants(tallies_H1993)
+  control <- callVariants(tallies_H2073)
+  
   control.cov <- coverage(bams$H2073)
 
   filters <-

@@ -65,14 +65,19 @@ metastatis and H2073 is derived from the primary tumor.
 Below, we call variants from a region around the p53 gene:
 <<callVariants>>=
 library(VariantTools)
-p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
-tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                  high_base_quality = 23L,
-                                  which = range(p53) + 5e4,
-                                  indels = TRUE, read_length = 75L)
-called.variants <- callVariants(bam, tally.param)
+if (requireNamespace("gmapR")) {
+    p53 <- gmapR:::exonsOnTP53Genome("TP53")
+    tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                      high_base_quality = 23L,
+                                      which = range(p53) + 5e4,
+                                      indels = TRUE, read_length = 75L)
+    called.variants <- callVariants(bam, tally.param)
+} else {
+    data(vignette)
+    called.variants <- callVariants(tallies_H1993)
+}
 @
 %
 In the above, we load the genome corresponding to the human p53 gene
@@ -86,9 +91,11 @@ the likelihood ratio test during calling.
 
 The returned \Robject{called\_variants} is a variant \Rclass{GRanges}, in
 the same form as that returned by \Rfunction{bam\_tally} in the
-\Rpackage{gmapR} package. Unsurprisingly, \Rfunction{callVariants}
+\Rpackage{gmapR} package. \Rfunction{callVariants}
 uses \Rfunction{bam\_tally} internally to generate the per-nucleotide
-counts (pileup) from the BAM file. The result is then filtered to
+counts (pileup) from the BAM file. Note that \Rpackage{gmapR} is only
+supported on UNIX-alikes (Linux, Mac OS X), so we load the precomputed
+tallies on other platforms. The result is then filtered to
 generate the variant calls. The \Rclass{VCF} class holds similar
 information; however, we favor the simple tally \Rclass{GRanges},
 because it has a separate record for each ALT, at each position. 
@@ -134,7 +141,9 @@ score. There are three read position bins: the first 10 bases, the final 10
 bases, and the stretch between them (these will be used in the QA
 step).
 <<tallyVariants>>=
-raw.variants <- tallyVariants(bam, tally.param)
+if (requireNamespace("gmapR")) {
+    tallies_H1993 <- tallyVariants(bam, tally.param)
+}
 @ 
 
 Unless one is running a variant caller in a routine fashion over
@@ -155,7 +164,7 @@ variants via \Rfunction{softFilter}. No variants are removed; the
 filter results are added to the \Rfunction{softFilterMatrix} component
 of the object.
 <<qaVariants>>=
-qa.variants <- qaVariants(raw.variants)
+qa.variants <- qaVariants(tallies_H1993)
 summary(softFilterMatrix(qa.variants))
 @ 
 
@@ -199,19 +208,19 @@ qa.filters <- VariantQAFilters()
 We can now ask for a summary of the filtering process, which gives the
 number of variants that pass each filter, separately and then combined:
 <<VariantQAFilters-summary>>=
-summary(qa.filters, raw.variants)
+summary(qa.filters, tallies_H1993)
 @ 
 %
 Now we retrieve only the variants that pass the filters:
 <<VariantQAFilters-subset>>=
-qa.variants <- subsetByFilter(raw.variants, qa.filters)
+qa.variants <- subsetByFilter(tallies_H1993, qa.filters)
 @ 
 
 We could do the same, except modify a filter parameter, such as the
 p-value cutoff for the Fisher Exact Test for strand bias:
 <<VariantQAFilters-fisherStrandP>>=
 qa.filters.custom <- VariantQAFilters(fisher.strand.p.value = 1e-4)
-summary(qa.filters.custom, raw.variants)
+summary(qa.filters.custom, tallies_H1993)
 @ 
 %
 To get a glance at the additional variants we are discarding
@@ -219,16 +228,18 @@ compared to the previous cutoff, we can subset the filter sets down to the
 Fisher strand filter, evaluate the old and new filter, and compare the
 results: 
 <<VariantQAFilters-compare>>=
-fs.original <- eval(qa.filters["fisherStrand"], raw.variants) 
-fs.custom <- eval(qa.filters.custom["fisherStrand"], raw.variants)
-raw.variants[fs.original != fs.custom]
+fs.original <- eval(qa.filters["fisherStrand"], tallies_H1993) 
+fs.custom <- eval(qa.filters.custom["fisherStrand"], tallies_H1993)
+tallies_H1993[fs.original != fs.custom]
 @ 
 
 Below, we demonstrate how one might add a mask to e.g. filter out
 variants in low complexity regions, where mapping errors tend to dominate:
 <<VariantQAFilters-mask>>=
 tally.param@mask <- GRanges("TP53", IRanges(1010000, width=10000))
-raw.variants.masked <- tallyVariants(bam, tally.param)
+if (requireNamespace("gmapR")) {
+    tallies_masked <- tallyVariants(bam, tally.param)
+}
 @
 
 We can also diagnose the filters for calling variants after basic QA
@@ -283,7 +294,13 @@ pair. Since we are starting from BAM files, we have to provide
 \Robject{tally.param} for the tally step. 
 <<callSomaticMutations>>=
 tally.param@bamTallyParam@indels <- FALSE
-somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param)
+if (requireNamespace("gmapR")) {
+    somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073,
+                                          tally.param)
+} else {
+    somatic <- callSampleSpecificVariants(called.variants, tallies_H2073,
+                                          coverage_H2073)
+}
 @ 
 %$
 This can be time-consuming for the entire genome, since the tallies
@@ -301,9 +318,16 @@ sample-specific variants, one may pass filter parameters directly to
 customizing some parameters.
 <<callSomaticMutations-readCount>>=
 calling.filters <- VariantCallingFilters(read.count = 3L)
-somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param,
-                                      calling.filters = calling.filters,
-                                      power = 0.9, p.value = 0.001)
+if (requireNamespace("gmapR")) {
+    somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param,
+                                          calling.filters = calling.filters,
+                                          power = 0.9, p.value = 0.001)
+} else {
+    called.variants <- callVariants(tallies_H1993, calling.filters)
+    somatic <- callSampleSpecificVariants(called.variants, tallies_H2073,
+                                          coverage_H2073,
+                                          power = 0.9, p.value = 0.001)
+}
 @ 
 
 \section{Exporting the calls as VCF}
@@ -350,7 +374,7 @@ wildtype <- callWildtype(bam, called.variants, VariantCallingFilters(),
                          pos = pos, power = 0.85)
 @
 %
-The returned object is a logical \Rclass{RleList} object, with
+The returned object is a logical vector, with
 \Rcode{TRUE} for wildtype, \Rcode{FALSE} for variant and \Rcode{NA}
 for no-call. Thus, we could calculate the fraction called as follows:
 <<percentageCalled>>=

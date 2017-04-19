@@ -56,17 +56,14 @@ VariantPostFilters(max.nbor.count = 0.1, whitelist = NULL)
 }
 
 \examples{
-p53 <- gmapR:::exonsOnTP53Genome("TP53")
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                  high_base_quality = 23L,
-                                  which = range(p53))
-# post-filters are not enabled by default during calling
-called.variants <- callVariants(bams[[1]], tally.param)
-# but can be applied at a later time...
+## post-filters are not enabled by default during calling
+data(vignette)
+called.variants <- callVariants(tallies_H1993)
+## but can be applied at a later time...
 postFilterVariants(called.variants, max.nbor.count = 0.15)
 
 # or enable during calling
-called.variants <- callVariants(bams[[1]], tally.param,
+called.variants <- callVariants(tallies_H1993,
                                 post.filters = VariantPostFilters())
 }

@@ -15,10 +15,10 @@
 }
 \usage{
 \S4method{callGenotypes}{VRanges,BigWigFile}(variants, cov,
-  param = CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+  param = CallGenotypesParam(variants),
   BPPARAM = defaultBPPARAM())
 \S4method{callGenotypes}{TabixFile,BigWigFile}(variants, cov,
-  param = CallGenotypesParam(GmapGenome(unique(genome(variants)))),
+  param = CallGenotypesParam(variants),
   BPPARAM = defaultBPPARAM())
 CallGenotypesParam(genome,
                    gq.breaks = c(0, 5, 20, 60, Inf),
@@ -44,7 +44,8 @@ CallGenotypesParam(genome,
     from \code{variants}.
   }
   \item{genome}{
-    The \code{GmapGenome} object used during tallying.
+    An object with a \code{getSeq} method representing the genomic
+    sequence used during tallying.
   }
   \item{gq.breaks}{A numeric vector representing an increasing sequence
     of genotype quality breaks to segment the wildtype runs.
@@ -113,10 +114,9 @@ CallGenotypesParam(genome,
 }
 \examples{
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                  high_base_quality = 23L,
-                                  which = gmapR::TP53Which())
-tallies <- tallyVariants(bams$H1993, tally.param)
+data(vignette)
+tallies <- tallies_H1993
+
 sampleNames(tallies) <- "H1993"
 mcols(tallies) <- NULL
 
@@ -130,6 +130,6 @@ genotypes <- callGenotypes(tallies, bwf, BPPARAM=BiocParallel::SerialParam())
 writeVcf(genotypes, tempfile("genotypes", fileext="vcf"), index=TRUE)
 
 ## customize
-params <- CallGenotypesParam(gmapR::TP53Genome(), p.error = 1/1000)
+params <- CallGenotypesParam(genome_p53, p.error = 1/1000)
 callGenotypes(tallies, bwf, params)
 }

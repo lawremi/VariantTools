@@ -128,9 +128,11 @@ TallyVariantsParam(genome,
 }
 
 \examples{
-tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                  high_base_quality = 23L,
-                                  which = gmapR::TP53Which())
-bams <- LungCancerLines::LungCancerBamFiles()
-raw.variants <- tallyVariants(bams$H1993, tally.param)
+if (requireNamespace("gmapR")) {
+    tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                      high_base_quality = 23L,
+                                      which = gmapR::TP53Which())
+    bams <- LungCancerLines::LungCancerBamFiles()
+    raw.variants <- tallyVariants(bams$H1993, tally.param)
+}
 }

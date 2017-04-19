@@ -43,11 +43,9 @@ annotateWithControlDepth(case, control, control.cov)
 }
 \examples{
   bams <- LungCancerLines::LungCancerBamFiles()
-  tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                    high_base_quality = 23L,
-                                    which = gmapR::TP53Which())
-  case <- callVariants(bams$H1993, tally.param)
-  control <- tallyVariants(bams$H2073, tally.param)
+  data(vignette)
+  case <- callVariants(tallies_H1993)
+  control <- tallies_H2073
   control.cov <- coverage(bams$H2073)
   annotateWithControlDepth(case, control, control.cov)
 }

@@ -89,14 +89,16 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
 }
 \examples{
 bams <- LungCancerLines::LungCancerBamFiles()
-tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
-                                  high_base_quality = 23L,
-                                  which = gmapR::TP53Which())
+if (requireNamespace("gmapR")) {
+    tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
+                                      high_base_quality = 23L,
+                                      which = gmapR::TP53Which())
 
-## simple usage
-variants <- callVariants(bams$H1993, tally.param)
-
+    ## simple usage
+    variants <- callVariants(bams$H1993, tally.param)
+}
 ## customize
+data(vignette)
 calling.filters <- VariantCallingFilters(p.error = 1/1000)
-callVariants(bams$H1993, tally.param, calling.filters)
+callVariants(tallies_H1993, calling.filters)
 }

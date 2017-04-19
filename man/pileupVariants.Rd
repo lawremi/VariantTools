@@ -50,7 +50,9 @@ pileupVariants(bams, genome, param = ApplyPileupsParam(), minAltDepth = 1L,
   \code{\link{tallyVariants}} for more statistics.
 }
 \examples{
-     bams <- LungCancerLines::LungCancerBamFiles()
-     param <- Rsamtools::ApplyPileupsParam(which=gmapR::TP53Which())
-     pileup <- pileupVariants(bams, gmapR::TP53Genome(), param)
+bams <- LungCancerLines::LungCancerBamFiles()
+if (requireNamespace("gmapR")) {
+    param <- Rsamtools::ApplyPileupsParam(which=gmapR::TP53Which())
+    pileup <- pileupVariants(bams, gmapR::TP53Genome(), param)
+}
 }

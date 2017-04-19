@@ -5,6 +5,8 @@ import(IRanges)
 import(GenomicRanges)
 import(VariantAnnotation)
 import(GenomeInfoDb)
+importFrom(stats, dbinom, dhyper, pbinom, pt, setNames)
+importFrom(utils, packageDescription)
 importFrom(parallel, mclapply, mcmapply)
 importFrom(Biostrings, DNAStringSet, detail, DNA_BASES)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich, ApplyPileupsParam,
