@@ -67,7 +67,7 @@ Below, we call variants from a region around the p53 gene:
 library(VariantTools)
 bams <- LungCancerLines::LungCancerBamFiles()
 bam <- bams$H1993
-if (requireNamespace("gmapR")) {
+if (requireNamespace("gmapR", quietly=TRUE)) {
     p53 <- gmapR:::exonsOnTP53Genome("TP53")
     tally.param <- TallyVariantsParam(gmapR::TP53Genome(), 
                                       high_base_quality = 23L,
@@ -141,7 +141,7 @@ score. There are three read position bins: the first 10 bases, the final 10
 bases, and the stretch between them (these will be used in the QA
 step).
 <<tallyVariants>>=
-if (requireNamespace("gmapR")) {
+if (requireNamespace("gmapR", quietly=TRUE)) {
     tallies_H1993 <- tallyVariants(bam, tally.param)
 }
 @ 
@@ -236,8 +236,8 @@ tallies_H1993[fs.original != fs.custom]
 Below, we demonstrate how one might add a mask to e.g. filter out
 variants in low complexity regions, where mapping errors tend to dominate:
 <<VariantQAFilters-mask>>=
-tally.param@mask <- GRanges("TP53", IRanges(1010000, width=10000))
-if (requireNamespace("gmapR")) {
+if (requireNamespace("gmapR", quietly=TRUE)) {
+    tally.param@mask <- GRanges("TP53", IRanges(1010000, width=10000))
     tallies_masked <- tallyVariants(bam, tally.param)
 }
 @
@@ -293,8 +293,8 @@ Here, we find the somatic mutations from a matched tumor/normal
 pair. Since we are starting from BAM files, we have to provide
 \Robject{tally.param} for the tally step. 
 <<callSomaticMutations>>=
-tally.param@bamTallyParam@indels <- FALSE
-if (requireNamespace("gmapR")) {
+if (requireNamespace("gmapR", quietly=TRUE)) {
+    tally.param@bamTallyParam@indels <- FALSE
     somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073,
                                           tally.param)
 } else {
@@ -318,7 +318,7 @@ sample-specific variants, one may pass filter parameters directly to
 customizing some parameters.
 <<callSomaticMutations-readCount>>=
 calling.filters <- VariantCallingFilters(read.count = 3L)
-if (requireNamespace("gmapR")) {
+if (requireNamespace("gmapR", quietly=TRUE)) {
     somatic <- callSampleSpecificVariants(bams$H1993, bams$H2073, tally.param,
                                           calling.filters = calling.filters,
                                           power = 0.9, p.value = 0.001)
