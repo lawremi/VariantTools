@@ -124,12 +124,17 @@ mcols(tallies) <- NULL
 bwf <- rtracklayer::export(coverage(bams$H1993), "coverage.bw")
 
 ## simple usage
-genotypes <- callGenotypes(tallies, bwf, BPPARAM=BiocParallel::SerialParam())
-
-## write to gVCF
-writeVcf(genotypes, tempfile("genotypes", fileext="vcf"), index=TRUE)
+## (need gmapR to find the genome in the GMAP database, otherwise,
+##  provide sequence directly as shown later)
+if (requireNamespace("gmapR", quietly=TRUE)) {
+    genotypes <- callGenotypes(tallies, bwf,
+                               BPPARAM=BiocParallel::SerialParam())
+}
 
 ## customize
 params <- CallGenotypesParam(genome_p53, p.error = 1/1000)
-callGenotypes(tallies, bwf, params)
+genotypes <- callGenotypes(tallies, bwf, params)
+
+## write to gVCF
+writeVcf(genotypes, tempfile("genotypes", fileext="vcf"), index=TRUE)
 }

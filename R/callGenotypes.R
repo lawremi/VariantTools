@@ -119,12 +119,13 @@ CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
                                ntile = 100L)
 {
   if (!hasMethod("getSeq", class(genome))) {
-    if (!requireNamespace("gmapR")) {
-        stop("no getSeq() method for 'genome' ",
-             "and the gmapR package is not installed to convert it to ",
-             "a GmapGenome object")
+    if (!isSingleString(genome))
+      genome <- genome(genome)
+    if (requireNamespace("gmapR", quietly=TRUE)) {
+      genome <- gmapR::GmapGenome(genome)
+    } else {
+      genome <- BSgenome::getBSgenome(genome)  
     }
-    genome <- gmapR::GmapGenome(genome)
   }
   if (any(is.na(gq.breaks)) || any(gq.breaks < 0)) {
     stop("'gq.breaks' values must be non-negative and non-NA")
