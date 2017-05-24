@@ -1,7 +1,7 @@
 \name{callGenotypes}
 \alias{callGenotypes}
-\alias{callGenotypes,VRanges,BigWigFile-method}
-\alias{callGenotypes,TabixFile,BigWigFile-method}
+\alias{callGenotypes,VRanges,ANY-method}
+\alias{callGenotypes,TabixFile,ANY-method}
 \alias{CallGenotypesParam}
 
 \title{
@@ -36,7 +36,7 @@ CallGenotypesParam(genome,
     quality.
   }
   \item{cov}{
-    The coverage, stored as a \code{BigWigFile}.
+    The coverage, as an RleList or a \code{BigWigFile}.
   }
   \item{param}{
     Parameters controlling the genotyping, constructed by
@@ -120,20 +120,19 @@ tallies <- tallies_H1993
 sampleNames(tallies) <- "H1993"
 mcols(tallies) <- NULL
 
-## we assume the coverage is already stored as a BigWigFile
-bwf <- rtracklayer::export(coverage(bams$H1993), "coverage.bw")
+cov <- coverage(bams$H1993)
 
 ## simple usage
 ## (need gmapR to find the genome in the GMAP database, otherwise,
 ##  provide sequence directly as shown later)
 if (requireNamespace("gmapR", quietly=TRUE)) {
-    genotypes <- callGenotypes(tallies, bwf,
+    genotypes <- callGenotypes(tallies, cov,
                                BPPARAM=BiocParallel::SerialParam())
 }
 
 ## customize
 params <- CallGenotypesParam(genome_p53, p.error = 1/1000)
-genotypes <- callGenotypes(tallies, bwf, params)
+genotypes <- callGenotypes(tallies, cov, params)
 
 ## write to gVCF
 writeVcf(genotypes, tempfile("genotypes", fileext="vcf"), index=TRUE)

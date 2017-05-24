@@ -89,7 +89,9 @@ addGenotypeRuns <- function(variants, cov, which, param) {
     stop("currently all ranges must be on the same sequence")
   }
   which <- keepSeqlevels(which, as.character(seqnames(which)))
-  cov <- import(cov, which=which, as="NumericList")[[1L]]
+  cov <- if (is(cov, "BigWigFile"))
+      import(cov, which=which, as="NumericList")[[1L]]
+  else cov[which][[1L]]
   cov.v <- as.integer(cov)
   gl <- compute_GL(0, cov.v, param@p.error)
   gq <- compute_GQ(gl)
@@ -140,7 +142,7 @@ CallGenotypesParam <- function(genome, gq.breaks = c(0, 5, 20, 60, Inf),
       genome=genome, which=which)
 }
 
-setMethod("callGenotypes", c("VRanges", "BigWigFile"),
+setMethod("callGenotypes", "VRanges",
           function(variants, cov,
                    param = CallGenotypesParam(variants),
                    BPPARAM = defaultBPPARAM())
@@ -164,7 +166,7 @@ setMethod("callGenotypes", c("VRanges", "BigWigFile"),
             ans
           })
 
-setMethod("callGenotypes", c("TabixFile", "BigWigFile"),
+setMethod("callGenotypes", "TabixFile",
           function(variants, cov,
                    param = CallGenotypesParam(variants),
                    BPPARAM = defaultBPPARAM())
