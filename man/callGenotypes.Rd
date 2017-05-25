@@ -1,7 +1,7 @@
 \name{callGenotypes}
 \alias{callGenotypes}
-\alias{callGenotypes,VRanges,ANY-method}
-\alias{callGenotypes,TabixFile,ANY-method}
+\alias{callGenotypes,VRanges-method}
+\alias{callGenotypes,TabixFile-method}
 \alias{CallGenotypesParam}
 
 \title{
@@ -14,10 +14,10 @@
   a binomial model of the variant frequency.
 }
 \usage{
-\S4method{callGenotypes}{VRanges,BigWigFile}(variants, cov,
+\S4method{callGenotypes}{VRanges}(variants, cov,
   param = CallGenotypesParam(variants),
   BPPARAM = defaultBPPARAM())
-\S4method{callGenotypes}{TabixFile,BigWigFile}(variants, cov,
+\S4method{callGenotypes}{TabixFile}(variants, cov,
   param = CallGenotypesParam(variants),
   BPPARAM = defaultBPPARAM())
 CallGenotypesParam(genome,
