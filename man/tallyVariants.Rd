@@ -27,6 +27,7 @@
 \S4method{tallyVariants}{BamFileList}(x, ...)
 \S4method{tallyVariants}{character}(x, ...)
 TallyVariantsParam(genome,
+                   which,
                    read_pos_breaks = NULL,
                    high_base_quality = 0L,
                    minimum_mapq = 13L,
@@ -67,9 +68,9 @@ TallyVariantsParam(genome,
     of length 1 it is tiled to create chunks for parallel evaluation.
     If it is longer than 1, each range becomes a chunk for parallel
     evaluation. If \code{which} is a ‘GRangesList’, each element
-    becomes a chunk. The latter can be useful to ensure equal loading
-    of workers in the case of regions covering multiple sequences (see
-    \code{\link{epGRanges}}). 
+    becomes a chunk. The latter can be useful to ensure balanced worker
+    load, e.g. in the case of regions covering multiple sequences
+    (see \code{\link{epGRanges}}). 
   }
   \item{read_pos_breaks}{The breaks used for tabulating the read positions (read
     positions) at each position. If this information is included (not
