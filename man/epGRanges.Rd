@@ -1,13 +1,14 @@
 \name{epGRanges}
+\alias{epGRanges}
 \title{
   Equipartition a GRanges object. 
 }
 \description{
 Splits a GRanges object into a specified number of partitions with
-equal (total) width. This is useful for instance to ensure
-balanced loading of workers in parallel evaluation. Each partition
-is a GRanges and the set of all partitions is returned as
-GRangesList object. 
+equal (total) width. This is useful to ensure balanced
+worker load in parallel evaluation of tallies for instance.
+Each returned partition is a GRanges and the set of all partitions
+is returned as a GRangesList object. 
 }
 \usage{
 epGRanges(gr,partitionNb)
