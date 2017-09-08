@@ -8,6 +8,7 @@ equal (total) width. This is useful for instance to ensure
 balanced loading of workers in parallel evaluation. Each partition
 is a GRanges and the set of all partitions is returned as
 GRangesList object. 
+}
 \usage{
 epGRanges(gr,partitionNb)
 }
