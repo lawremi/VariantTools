@@ -60,6 +60,17 @@ TallyVariantsParam(genome,
   \item{genome}{The genome, either a \code{\link[gmapR]{GmapGenome}} or
     something coercible to one.
   }
+  \item{which}{A ‘RangesList’ or something coercible to one that
+    limits the tally to that range or set of ranges. By default,
+    the entire genome is processed. For parallel evaluation
+    (see \code{BPPARAM}): if \code{which} is a ‘GenomicRanges’
+    of length 1 it is tiled to create chunks for parallel evaluation.
+    If it is longer than 1, each range becomes a chunk for parallel
+    evaluation. If \code{which} is a ‘GRangesList’, each element
+    becomes a chunk. The latter can be useful to ensure equal loading
+    of workers in the case of regions covering multiple sequences (see
+    \code{\link{epGRanges}}). 
+  }
   \item{read_pos_breaks}{The breaks used for tabulating the read positions (read
     positions) at each position. If this information is included (not
     \code{NULL}), \code{\link{qaVariants}} will use it during filtering.
