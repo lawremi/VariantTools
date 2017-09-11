@@ -22,13 +22,15 @@
   something coercible to one that limits the tally to that range or
   set of ranges. By default, the entire genome is processed.
 
-  For parallel evaluation (see \code{BPPARAM}): if \code{which}
-  is a ‘GenomicRanges’ of length 1 it is tiled to create chunks for
-  parallel evaluation. If it is longer than 1, each range becomes a
-  chunk for parallel evaluation. If \code{which} is a ‘GRangesList’,
-  each element becomes a chunk. The latter can be useful to ensure
-  balanced worker load, e.g. in the case of regions covering multiple
-  sequences(see \code{\link{epGRanges}}).
+  For parallel evaluation (see \code{BPPARAM}): Specifically,
+  \code{which} can be a ‘GenomicRanges’ or a ‘GRangesList’. If
+  \code{which} is a ‘GenomicRanges’ and has length 1 it is tiled
+  to create chunks for parallel evaluation. If it is longer
+  than 1, each range becomes a chunk for parallel evaluation.
+  If \code{which} is a ‘GRangesList’, each element (i.e. each
+  ‘GenomicRanges’) becomes a chunk. The latter can be useful to
+  ensure balanced worker load, e.g. in the case of regions covering
+  multiple sequences(see \code{\link{epGRanges}}).
 }
 \note{
   The \code{VariantTallyParam} constructor is \strong{DEPRECATED}.
