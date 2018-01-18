@@ -5,7 +5,7 @@ Version: 1.19.1
 Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Explore, diagnose, and compare variant calls using filters.
-Depends: S4Vectors (>= 0.9.25), IRanges (>= 1.99.2), GenomicRanges (>= 1.17.7),
+Depends: S4Vectors (>= 0.17.23), IRanges (>= 1.99.2), GenomicRanges (>= 1.17.7),
         VariantAnnotation (>= 1.11.16), methods
 Imports: Rsamtools (>= 1.17.6), BiocGenerics, Biostrings, parallel,
         GenomicFeatures (>= 1.17.13), Matrix,
