@@ -13,34 +13,42 @@ loadVariants <- function(x, ...) {
   else get(load(x))
 }
 
-calculateConcordanceMatrix <- function(variantFiles, ...) {  
+calculateConcordanceMatrix <- function(variantFiles, ...) {
   if (length(variantFiles) < 2L) {
-    stop("There must at least two variant files.")
+    stop("There must at least two variant sets.")
   }
-  if (!all(file.exists(variantFiles))) {
-    stop("Some of the files could not be found.")
+  if (is.character(variantFiles)) {
+      if (!all(file.exists(variantFiles))) {
+          stop("Some of the files could not be found.")
+      }
+      nms <- variantFiles
+  } else {
+      if (!all(vapply(variantFiles, is, class2="VRanges", logical(1L))))
+          stop("'variantFiles' must be a vector of file names or ",
+               "a list of VRanges objects")
+      nms <- names(variantFiles)
   }
-  
+
   ## initialize vcmat, pairwise variance concordant score between dirs
   n <- length(variantFiles)
   vcmat <- matrix(NA, nrow=n, ncol=n)
-  rownames(vcmat) <- colnames(vcmat) <- variantFiles
+  rownames(vcmat) <- colnames(vcmat) <- nms
 
   ## compute vcmat
   for (i in 1:(n - 1)) {
-    avar <- try({
-      loadVariants(variantFiles[i], ...)
-    }, silent=TRUE)
+    avar <- if (is(variantFiles[[i]], "VRanges"))
+                x
+            else try(loadVariants(variantFiles[i], ...), silent=TRUE)
     if (class(avar) == "try-error") {
-      stop("error: cannot load '", variantFiles[i], "': ", avar)
+      stop("error: cannot load '", nms[i], "': ", avar)
     }
   
     for (j in (i+1):n) {
-      bvar <- try({
-        loadVariants(variantFiles[j], ...)
-      }, silent=TRUE)
+      bvar <- if (is(variantFiles[[j]], "VRanges"))
+                  x
+              else try(loadVariants(variantFiles[j], ...), silent=TRUE)
       if (class(bvar) == "try-error") {
-        stop("error: cannot load '", variantFiles[j], "': ", bvar)
+        stop("error: cannot load '", nms[j], "': ", bvar)
       }
     
       ## compute variant concordance
@@ -54,8 +62,8 @@ calculateConcordanceMatrix <- function(variantFiles, ...) {
 
       if (getOption("verbose"))
         message(paste("variantConcordance:",
-                      variantFiles[i],
-                      variantFiles[j],
+                      nms[i],
+                      nms[j],
                       vc$fraction, vc$denominator, sep="\t"))
     }
   }
