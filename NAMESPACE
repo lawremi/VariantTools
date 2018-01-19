@@ -36,6 +36,8 @@ export(SetdiffVariantsFilter, DepthFETFilter, MaxControlFreqFilter)
 
 export(callWildtype, minCallableCoverage)
 
+export(epGRanges)
+
 ## some utilities
 export(matchVariants, "%variant_in%", extractCoverageForPositions)
 export(pileupVariants)
