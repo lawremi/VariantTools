@@ -75,7 +75,7 @@ callWildtype <- function(reads, variants, calling.filters, pos = NULL,
   wildtype[!callable] <- NA
   if (is.null(pos)) {
     seqlevels(variants) <- names(callable)
-    var <- as(variants, "RangesList")
+    var <- as(variants, "IntegerRangesList")
   } else {
     var <- pos %over% variants
   }

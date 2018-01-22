@@ -1,16 +1,16 @@
 Package: VariantTools
 Type: Package
 Title: Tools for Exploratory Analysis of Variant Calls
-Version: 1.21.0
+Version: 1.21.1
 Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <michafla@gene.com>
 Description: Explore, diagnose, and compare variant calls using filters.
-Depends: S4Vectors (>= 0.9.25), IRanges (>= 1.99.2), GenomicRanges (>= 1.17.7),
-        VariantAnnotation (>= 1.11.16), methods
-Imports: Rsamtools (>= 1.17.6), BiocGenerics, Biostrings, parallel,
-        GenomicFeatures (>= 1.17.13), Matrix,
-        rtracklayer (>= 1.25.3), BiocParallel, GenomeInfoDb, BSgenome, Biobase
-Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph, gmapR (>= 1.13.4)
+Depends: S4Vectors (>= 0.17.25), IRanges (>= 2.13.12),
+        GenomicRanges (>= 1.31.8), VariantAnnotation (>= 1.11.16), methods
+Imports: Rsamtools (>= 1.31.2), BiocGenerics, Biostrings, parallel,
+        GenomicFeatures (>= 1.31.3), Matrix,
+        rtracklayer (>= 1.39.7), BiocParallel, GenomeInfoDb, BSgenome, Biobase
+Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph, gmapR (>= 1.21.3)
 License: Artistic-2.0
 LazyLoad: yes
 biocViews: Genetics, GeneticVariability, Sequencing
