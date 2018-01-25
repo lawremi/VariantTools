@@ -21,7 +21,9 @@ installed <- function(x) {
 }
 
 chunkRange <- function(which, n) {
-  chunks <- breakInChunks(width(which), ceiling(width(which) / n))
+  ## Why not just use breakInChunks(width(which), nchunk=n) here?
+  ## H.P. [Jan 25, 2018]
+  chunks <- breakInChunks(width(which), chunksize=ceiling(width(which) / n))
   which <- GRanges(seqnames(which),
                    IRanges(start(which) + start(chunks) - 1L,
                            width = width(chunks)))
