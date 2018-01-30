@@ -49,11 +49,14 @@ setMethod("tallyVariants", "BamFile",
             if (length(which) == 0L) {
               which <- tileGenome(seqlengths(param@bamTallyParam@genome),
                                   bpworkers(BPPARAM))
-            } else if (length(which) == 1L) {
-              which <- tile(which,
-                            n=min(width(which), bpworkers(BPPARAM)))[[1L]]
             }
-            which <- as(which, "List")
+            if (is(which,"GenomicRanges")) {
+ 		if (length(which) == 1L) {
+                     which <- tile(which,
+                             n=min(width(which), bpworkers(BPPARAM)))[[1L]]
+             	}
+                which <- as(which, "List")
+             }
             ans <- bplapply(which, tally_region_job, x = x, param = param,
                             BPPARAM = BPPARAM)
             do.call(c, unname(ans))
