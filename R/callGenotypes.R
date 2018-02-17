@@ -155,7 +155,9 @@ setMethod("callGenotypes", "VRanges",
             f <- factor(findOverlaps(variants, which, select="arbitrary"),
                         seq_len(length(which)))
             vl <- split(variants, f)
-            ansl <- bpmapply(callGenotypesOneRegion, vl, as.list(which),
+            ansl <- bpmapply(callGenotypesOneRegion,
+                             vl,
+                             as(which, "GRangesList"),
                              MoreArgs=list(
                                cov=cov,
                                param=param

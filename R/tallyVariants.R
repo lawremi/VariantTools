@@ -42,7 +42,7 @@ setMethod("tallyVariants", "BamFile",
               ans[!(ans %over% param@mask)]
             }
             tally_region_job <- function(x, which, param) {
-                do.call(c, unname(lapply(as.list(which), tally_region,
+                do.call(c, unname(lapply(as(which, "GRangesList"), tally_region,
                                          x=x, param=param)))
             }
             which <- param@bamTallyParam@which
@@ -53,7 +53,7 @@ setMethod("tallyVariants", "BamFile",
               which <- tile(which,
                             n=min(width(which), bpworkers(BPPARAM)))[[1L]]
             }
-            which <- as(which, "List")
+            which <- as(which, "GRangesList")
             ans <- bplapply(which, tally_region_job, x = x, param = param,
                             BPPARAM = BPPARAM)
             do.call(c, unname(ans))
