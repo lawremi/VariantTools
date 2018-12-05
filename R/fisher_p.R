@@ -21,9 +21,6 @@ fisher_p <- function( x, y, m, n, relErr = 1 + 1e-7 ) {
 fisher_p_vectorized <- function(x, y, m, n, relErr = 1 + 1e-7) {
   ## 'x' and 'y' are entries in the top two cells; 'm' and 'n' are
   ## column totals. Vectorized version of Richard's fisher_p().
-  ## Only about 3X faster than non-vectorized version.
-  ## With some simple sum and max operations over partitions,
-  ## this would be way faster.
   k <- x + y
   lo <- pmax(0L, k - n)
   hi <- pmin(k, m)

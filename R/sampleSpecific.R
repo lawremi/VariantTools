@@ -137,7 +137,7 @@ LowerFrequencyInOtherFilter <- function(other, other.cov, p.value = 0.01)
       ## counts, but bam_tally is no longer giving us those for the alts.
     x <- annotateWithControlDepth(x, other, other.cov)
     p <- with(x, pbinom(control.alt.depth, control.total.depth,
-                        altDepth / totalDepth))
+                        as.integer(altDepth / totalDepth)))
     p < p.value
   }
 }
