@@ -48,12 +48,12 @@ setMethod("tallyVariants", "BamFile",
             which <- param@bamTallyParam@which
             if (length(which) == 0L) {
               which <- tileGenome(seqlengths(param@bamTallyParam@genome),
-                                  bpworkers(BPPARAM))
+                                  bpnworkers(BPPARAM))
             }
             if (is(which,"GenomicRanges")) {
  		if (length(which) == 1L) {
-                     which <- tile(which,
-                             n=min(width(which), bpworkers(BPPARAM)))[[1L]]
+                    which <- tile(which, n=min(width(which),
+                                               bpnworkers(BPPARAM)))[[1L]]
              	}
                 which <- as(which, "GRangesList")
              }

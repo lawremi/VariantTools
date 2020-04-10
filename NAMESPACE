@@ -16,7 +16,7 @@ importClassesFrom(Matrix, dgTMatrix)
 importFrom(rtracklayer, import)
 importClassesFrom(rtracklayer, BigWigFile)
 importFrom(tools, file_ext)
-importFrom(BiocParallel, bpvec, registered, bplapply, bpmapply, bpworkers)
+importFrom(BiocParallel, bpvec, registered, bplapply, bpmapply, bpnworkers)
 importFrom(BSgenome, getSeq)
 importFrom(Biobase, sampleNames, "sampleNames<-")
 
