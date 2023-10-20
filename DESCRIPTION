@@ -10,7 +10,8 @@ Depends: R (>= 3.5.0), S4Vectors (>= 0.17.33), IRanges (>= 2.13.12),
 Imports: Rsamtools (>= 1.31.2), BiocGenerics, Biostrings, parallel,
         GenomicFeatures (>= 1.31.3), Matrix,
         rtracklayer (>= 1.39.7), BiocParallel, GenomeInfoDb, BSgenome, Biobase
-Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph, gmapR (>= 1.21.3)
+Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph, gmapR (>= 1.21.3),
+          TxDb.Hsapiens.UCSC.hg19.knownGene
 License: Artistic-2.0
 LazyLoad: yes
 biocViews: Genetics, GeneticVariability, Sequencing
