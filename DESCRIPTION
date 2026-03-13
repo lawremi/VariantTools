@@ -1,7 +1,7 @@
 Package: VariantTools
 Type: Package
 Title: Tools for Exploratory Analysis of Variant Calls
-Version: 1.53.0
+Version: 1.53.1
 Author: Michael Lawrence, Jeremiah Degenhardt, Robert Gentleman
 Maintainer: Michael Lawrence <lawremi@gmail.com>
 Description: Explore, diagnose, and compare variant calls using filters.
@@ -15,3 +15,4 @@ Suggests: RUnit, LungCancerLines (>= 0.0.6), RBGL, graph, gmapR (>= 1.21.3),
 License: Artistic-2.0
 LazyLoad: yes
 biocViews: Genetics, GeneticVariability, Sequencing
+PackageStatus: Deprecated
