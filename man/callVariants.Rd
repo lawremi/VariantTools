@@ -45,7 +45,7 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
     consider the set of variant calls as a whole and remove those with
     suspicious patterns.
   }
-  \code{...}{Arguments for \code{VariantCallingFilters}, listed below.}
+  \item{\dots}{Arguments for \code{VariantCallingFilters}, listed below.}
   \item{read.count}{
     Require at least this many high quality reads with
     the alternate base. The default value is designed to catch sequencing
