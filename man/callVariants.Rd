@@ -58,9 +58,6 @@ VariantCallingFilters(read.count = 2L, p.lower = 0.2, p.error = 1/1000)
   \item{p.error}{The binomial probability for a sequencing error (default
     is reasonable for Illumina data with the default quality cutoff).
   }
-  \item{\dots}{
-    Arguments to pass to \code{VariantCallingFilters}.
-  }
 }
 \details{
   There are two steps for calling
