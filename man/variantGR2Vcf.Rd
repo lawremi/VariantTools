@@ -12,7 +12,7 @@
 }
 \usage{
 variantGR2Vcf(x, sample.id, project = NULL,
-              genome = unique(GenomicRanges::genome(x)))
+              genome = unique(GenomeInfoDb::genome(x)))
 }
 \note{
   This function is \strong{DEPRECATED}. The \code{callVariants} function

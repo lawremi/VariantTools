@@ -2,7 +2,7 @@
 ## **DEPRECATED** in favor of VRanges
 
 variantGR2Vcf <- function(x, sample.id, project = NULL,
-                          genome = unique(GenomicRanges::genome(x)))
+                          genome = unique(GenomeInfoDb::genome(x)))
 {
   variantGRangesIsDeprecated("variantGR2Vcf")
   vr <- makeVRangesFromVariantGRanges(x, genome)
