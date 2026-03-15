@@ -4,9 +4,8 @@
 \documentclass[10pt]{article}
 
 \usepackage{times}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage[colorlinks=true, linkcolor=Blue, urlcolor=Blue,
-  citecolor=Blue]{hyperref}
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue,
+  citecolor=blue]{hyperref}
 
 \textwidth=6.5in
 \textheight=8.5in
@@ -174,7 +173,7 @@ test for this purpose. The ratio is $P(D|p=p_{lower}) /
 P(D|p=p_{error})$, where $p_{lower} = 0.2$ is the assumed lowest
 variant frequency and $p_{error} = 0.001$ is the assumed error rate in
 the sequencing (default: 0.001).
-<<callVariants>>=
+<<callVariants-qa>>=
 called.variants <- callVariants(qa.variants)
 @ 
 
