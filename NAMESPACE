@@ -8,7 +8,7 @@ import(GenomeInfoDb)
 importFrom(stats, dbinom, dhyper, pbinom, pt, setNames)
 importFrom(utils, packageDescription)
 importFrom(parallel, mclapply, mcmapply)
-importFrom(Biostrings, DNAStringSet, detail, DNA_BASES)
+importFrom(Biostrings, DNAStringSet, DNA_BASES)
 importFrom(Rsamtools, BamFile, ScanBamParam, bamWhich, ApplyPileupsParam,
            PileupFiles, plpWhat, "plpWhat<-", applyPileups)
 importFrom(GenomicFeatures, cdsBy, exonsBy, transcriptLocs2refLocs)
